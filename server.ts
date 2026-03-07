@@ -180,6 +180,8 @@ async function startServer() {
   // Import database file
   app.post("/api/import", upload.single('database'), (req, res) => {
     console.log("Import request received");
+    const backupPath = dbPath + '.bak';
+    
     try {
       if (!req.file) {
         console.log("No file uploaded");
@@ -187,40 +189,70 @@ async function startServer() {
       }
       console.log("File uploaded:", req.file.path);
 
+      // Validate the uploaded file is a valid SQLite database
+      try {
+        const tempDb = new Database(req.file.path, { fileMustExist: true });
+        tempDb.pragma('quick_check');
+        tempDb.close();
+        console.log("Uploaded file validation successful");
+      } catch (validationError) {
+        console.error("Uploaded file is not a valid SQLite database:", validationError);
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: "Invalid SQLite file" });
+      }
+
       // Close current connection
       if (db) {
-        db.close();
-        console.log("Database closed");
-      } else {
-        console.log("Database was not open");
+        try {
+          db.close();
+          console.log("Database closed");
+        } catch (e) {
+          console.warn("Error closing database (might be already closed):", e);
+        }
+      }
+
+      // Backup existing database
+      if (fs.existsSync(dbPath)) {
+        console.log("Backing up current database to", backupPath);
+        fs.copyFileSync(dbPath, backupPath);
       }
 
       // Replace file
       console.log("Replacing file:", req.file.path, "with", dbPath);
-      fs.copyFileSync(req.file.path, dbPath);
-      fs.unlinkSync(req.file.path); // Clean up uploaded file
-      console.log("File replaced");
-      
-      // Remove WAL/SHM files
-      if (fs.existsSync(dbPath + '-shm')) {
-        fs.unlinkSync(dbPath + '-shm');
-        console.log("Removed -shm");
+      try {
+        fs.copyFileSync(req.file.path, dbPath);
+        fs.unlinkSync(req.file.path); // Clean up uploaded file
+        console.log("File replaced");
+        
+        // Remove WAL/SHM files to prevent corruption with new DB
+        if (fs.existsSync(dbPath + '-shm')) fs.unlinkSync(dbPath + '-shm');
+        if (fs.existsSync(dbPath + '-wal')) fs.unlinkSync(dbPath + '-wal');
+        
+        // Re-open connection
+        initDb();
+        console.log("Database re-opened successfully");
+        
+        // If successful, remove backup (optional, or keep it for safety)
+        // fs.unlinkSync(backupPath); 
+        
+        res.json({ success: true });
+      } catch (replaceError) {
+        console.error("Error during replacement/re-init:", replaceError);
+        
+        // Restore from backup
+        if (fs.existsSync(backupPath)) {
+          console.log("Restoring from backup...");
+          fs.copyFileSync(backupPath, dbPath);
+          // Try to re-init with backup
+          try { initDb(); } catch (e) { console.error("Fatal: Could not restore backup", e); }
+        }
+        
+        res.status(500).json({ error: "Failed to import database, restored previous version" });
       }
-      if (fs.existsSync(dbPath + '-wal')) {
-        fs.unlinkSync(dbPath + '-wal');
-        console.log("Removed -wal");
-      }
-
-      // Re-open connection
-      initDb();
-      console.log("Database re-opened");
-
-      console.log("Database imported successfully");
-      res.json({ success: true });
     } catch (error) {
-      console.error("Error importing database:", error);
-      // Attempt to re-open DB if it failed
-      try { initDb(); } catch (e) { console.error("Fatal: Could not reopen DB", e); }
+      console.error("Unexpected error importing database:", error);
+      // Ensure DB is open if possible
+      try { if (!db || !db.open) initDb(); } catch (e) {}
       res.status(500).json({ error: "Failed to import database" });
     }
   });
