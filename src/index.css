@@ -36,6 +36,11 @@ body {
   background-image: radial-gradient(circle at 50% 0%, #f1f5f9 0%, #e2e8f0 100%);
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+}
+
+input, textarea, [contenteditable="true"] {
+  user-select: text;
 }
 
 /* Modern 3D Minimalist Utilities */

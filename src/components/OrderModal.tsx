@@ -35,12 +35,22 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
     generalDiscountValue: 0,
     amountPaid: 0,
     generalObservations: '',
+    deliveryInfo: {
+      isDelivery: false,
+      senderName: '',
+      receiverName: '',
+      phone: '',
+      address: '',
+      referencePoint: '',
+      observations: '',
+      paymentAtLocation: false,
+    }
   });
 
   const [deleteReason, setDeleteReason] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false);
-  const [printType, setPrintType] = useState<'receipt-partial' | 'receipt-total' | 'order' | 'quotation' | null>(null);
+  const [printType, setPrintType] = useState<'receipt-partial' | 'receipt-total' | 'order' | 'quotation' | 'delivery' | null>(null);
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -75,14 +85,14 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
     }
   }, [order]);
 
-  const triggerPrint = (type: 'receipt-partial' | 'receipt-total' | 'order' | 'quotation') => {
+  const triggerPrint = (type: 'receipt-partial' | 'receipt-total' | 'order' | 'quotation' | 'delivery') => {
     setPrintType(type);
     setTimeout(() => {
       if (!printRef.current) return;
       
       const isDirectPrint = companyInfo?.directPrint;
       const dateStr = format(new Date(), 'dd-MM-yyyy_HH-mm');
-      const prefix = type === 'quotation' ? 'cotacao' : type.startsWith('receipt') ? 'recibo' : 'pedido';
+      const prefix = type === 'quotation' ? 'cotacao' : type.startsWith('receipt') ? 'recibo' : type === 'delivery' ? 'entrega' : 'pedido';
       const title = `${prefix}_${order?.queueNumber || 'novo'}_${dateStr}`;
       
       const html = `
@@ -283,6 +293,16 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
                       <Printer size={18} />
                       <span className="hidden sm:inline">Pedido</span>
                     </button>
+                    {formData.deliveryInfo?.isDelivery && (
+                      <button 
+                        onClick={() => triggerPrint('delivery')}
+                        className="btn-3d btn-3d-secondary p-2 text-orange-600 flex items-center gap-2 text-sm"
+                        title="Imprimir Ficha de Entrega"
+                      >
+                        <Printer size={18} />
+                        <span className="hidden sm:inline">Entrega</span>
+                      </button>
+                    )}
                     {formData.paymentStatus === 'parcial' ? (
                       <button 
                         onClick={() => triggerPrint('receipt-partial')}
@@ -708,6 +728,145 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
               className="input-3d w-full px-3 py-2 min-h-[80px]"
               placeholder="Anotações importantes sobre este pedido..."
             />
+          </section>
+
+          {/* Entrega */}
+          <section className="card-3d p-5 bg-white space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-1.5 h-4 bg-orange-500 rounded-full"></span>
+                Informações de Entrega
+              </h3>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={formData.deliveryInfo?.isDelivery || false}
+                  onChange={e => setFormData({
+                    ...formData, 
+                    deliveryInfo: {
+                      ...(formData.deliveryInfo || {
+                        isDelivery: false,
+                        senderName: '',
+                        receiverName: '',
+                        phone: '',
+                        address: '',
+                        referencePoint: '',
+                        observations: '',
+                        paymentAtLocation: false,
+                      }),
+                      isDelivery: e.target.checked,
+                      receiverName: e.target.checked ? (formData.customerName || '') : '',
+                      phone: e.target.checked ? (formData.customerPhone || '') : '',
+                    }
+                  })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                <span className="ml-3 text-xs font-bold text-slate-600 uppercase">Pedido para Entrega?</span>
+              </label>
+            </div>
+
+            {formData.deliveryInfo?.isDelivery && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Quem está enviando (Remetente)</label>
+                  <input 
+                    type="text" 
+                    value={formData.deliveryInfo.senderName} 
+                    onChange={e => setFormData({
+                      ...formData, 
+                      deliveryInfo: { ...formData.deliveryInfo!, senderName: e.target.value }
+                    })}
+                    className="input-3d w-full px-3 py-2"
+                    placeholder="Nome da empresa ou pessoa..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Quem vai receber (Destinatário)</label>
+                  <input 
+                    type="text" 
+                    value={formData.deliveryInfo.receiverName} 
+                    onChange={e => setFormData({
+                      ...formData, 
+                      deliveryInfo: { ...formData.deliveryInfo!, receiverName: e.target.value }
+                    })}
+                    className="input-3d w-full px-3 py-2"
+                    placeholder="Nome de quem recebe..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Telefone de Contato</label>
+                  <input 
+                    type="text" 
+                    value={formData.deliveryInfo.phone} 
+                    onChange={e => setFormData({
+                      ...formData, 
+                      deliveryInfo: { ...formData.deliveryInfo!, phone: e.target.value }
+                    })}
+                    className="input-3d w-full px-3 py-2"
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Ponto de Referência</label>
+                  <input 
+                    type="text" 
+                    value={formData.deliveryInfo.referencePoint} 
+                    onChange={e => setFormData({
+                      ...formData, 
+                      deliveryInfo: { ...formData.deliveryInfo!, referencePoint: e.target.value }
+                    })}
+                    className="input-3d w-full px-3 py-2"
+                    placeholder="Ex: Próximo ao mercado..."
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Endereço Completo</label>
+                  <input 
+                    type="text" 
+                    value={formData.deliveryInfo.address} 
+                    onChange={e => setFormData({
+                      ...formData, 
+                      deliveryInfo: { ...formData.deliveryInfo!, address: e.target.value }
+                    })}
+                    className="input-3d w-full px-3 py-2"
+                    placeholder="Rua, número, bairro, cidade..."
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Observações da Entrega</label>
+                  <textarea 
+                    value={formData.deliveryInfo.observations} 
+                    onChange={e => setFormData({
+                      ...formData, 
+                      deliveryInfo: { ...formData.deliveryInfo!, observations: e.target.value }
+                    })}
+                    className="input-3d w-full px-3 py-2 min-h-[60px]"
+                    placeholder="Instruções para o entregador..."
+                  />
+                </div>
+                <div className="md:col-span-2 flex items-center gap-4 bg-orange-50 p-3 rounded-xl border border-orange-100">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.deliveryInfo.paymentAtLocation}
+                      onChange={e => setFormData({
+                        ...formData, 
+                        deliveryInfo: { ...formData.deliveryInfo!, paymentAtLocation: e.target.checked }
+                      })}
+                      className="w-4 h-4 text-orange-600 rounded border-slate-300 focus:ring-orange-500"
+                    />
+                    <span className="text-xs font-bold text-orange-800 uppercase">Receber pagamento no local?</span>
+                  </label>
+                  <div className="ml-auto text-right">
+                    <p className="text-[10px] font-bold text-orange-600 uppercase">Valor a Receber:</p>
+                    <p className="text-sm font-black text-orange-800">
+                      R$ {formData.deliveryInfo.paymentAtLocation ? Math.max(0, calculateTotal() - (formData.amountPaid || 0)).toFixed(2) : '0.00'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Área de Exclusão/Cancelamento */}

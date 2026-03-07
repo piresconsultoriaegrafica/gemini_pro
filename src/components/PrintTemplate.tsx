@@ -6,7 +6,7 @@ import { calculateOrderTotal, calculateItemTotal } from '../utils';
 interface PrintTemplateProps {
   order: Order;
   companyInfo: CompanyInfo;
-  type: 'receipt-partial' | 'receipt-total' | 'order' | 'quotation';
+  type: 'receipt-partial' | 'receipt-total' | 'order' | 'quotation' | 'delivery';
   employees?: Employee[];
 }
 
@@ -82,7 +82,8 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
             <h2 className={`font-bold uppercase ${titleClass}`}>
               {type === 'receipt-partial' ? 'RECIBO PARCIAL' : 
                type === 'receipt-total' ? 'RECIBO TOTAL' : 
-               type === 'quotation' ? 'COTAÇÃO' : 'PEDIDO'}
+               type === 'quotation' ? 'COTAÇÃO' : 
+               type === 'delivery' ? 'FICHA DE ENTREGA' : 'PEDIDO'}
             </h2>
             <p className="font-bold text-lg mt-1">FILA: {order.queueNumber}º</p>
           </div>
@@ -95,7 +96,26 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
             <p><strong>DATA:</strong> {format(new Date(order.createdAt), 'dd/MM/yy HH:mm')}</p>
           </div>
 
-          {!isReceipt && (
+          {type === 'delivery' && order.deliveryInfo && (
+            <div className="mb-3 border-b border-black pb-2 border-dashed bg-slate-50 p-1">
+              <p className="font-bold border-b border-black mb-1">DADOS DE ENTREGA</p>
+              <p><strong>DE:</strong> {order.deliveryInfo.senderName || companyInfo.name}</p>
+              <p><strong>PARA:</strong> {order.deliveryInfo.receiverName}</p>
+              <p><strong>TEL:</strong> {order.deliveryInfo.phone}</p>
+              <p><strong>END:</strong> {order.deliveryInfo.address}</p>
+              {order.deliveryInfo.referencePoint && <p><strong>REF:</strong> {order.deliveryInfo.referencePoint}</p>}
+              {order.deliveryInfo.observations && <p><strong>OBS:</strong> {order.deliveryInfo.observations}</p>}
+              <div className="mt-2 pt-1 border-t border-black border-dotted">
+                <p className="font-bold">PAGAMENTO NO LOCAL?</p>
+                <p className="text-lg">{order.deliveryInfo.paymentAtLocation ? 'SIM - RECEBER VALOR' : 'NÃO - JÁ PAGO'}</p>
+                {order.deliveryInfo.paymentAtLocation && (
+                  <p className="text-xl font-black">VALOR: R$ {remaining.toFixed(2)}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {(type === 'order' || type === 'quotation' || type === 'delivery') && (
             <div className="mb-3 border-b border-black pb-2 border-dashed">
               <p className="font-bold mb-1 border-b border-black">QTD x DESCRIÇÃO</p>
               {order.items.map((item, index) => {
@@ -106,10 +126,12 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
                       <span className="font-bold">{item.quantity}x {item.name}</span>
                     </div>
                     {item.observations && <div className="text-[9px] italic ml-4">- {item.observations}</div>}
-                    <div className="flex justify-between ml-4">
-                      <span>UN: R${item.unitPrice.toFixed(2)}</span>
-                      <span className="font-bold">R${itemTotal.toFixed(2)}</span>
-                    </div>
+                    {type !== 'delivery' && (
+                      <div className="flex justify-between ml-4">
+                        <span>UN: R${item.unitPrice.toFixed(2)}</span>
+                        <span className="font-bold">R${itemTotal.toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -201,7 +223,8 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
             <h2 className="text-xl font-bold uppercase tracking-widest mb-2 text-indigo-900">
               {type === 'receipt-partial' ? 'Recibo Parcial' : 
                type === 'receipt-total' ? 'Recibo Total' : 
-               type === 'quotation' ? 'Cotação' : 'Pedido'}
+               type === 'quotation' ? 'Cotação' : 
+               type === 'delivery' ? 'Ficha de Entrega' : 'Pedido'}
             </h2>
             <div className="inline-block bg-indigo-50 border border-indigo-100 rounded-2xl px-4 py-2 shadow-sm">
               <p className="text-[10px] font-bold uppercase text-indigo-600">Nº Fila</p>
@@ -209,6 +232,64 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
             </div>
           </div>
         </div>
+
+        {/* Delivery Info (A4) */}
+        {type === 'delivery' && order.deliveryInfo && (
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="border border-orange-200 bg-orange-50/50 p-6 rounded-2xl">
+              <h3 className="text-sm font-bold text-orange-800 uppercase tracking-wider border-b border-orange-200 pb-2 mb-4 flex items-center gap-2">
+                <span className="w-1.5 h-4 bg-orange-500 rounded-full"></span>
+                Dados de Entrega
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-orange-600">Remetente</p>
+                  <p className="font-bold text-slate-800">{order.deliveryInfo.senderName || companyInfo.name}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-orange-600">Destinatário</p>
+                  <p className="font-bold text-slate-800">{order.deliveryInfo.receiverName}</p>
+                  <p className="text-xs text-slate-600">{order.deliveryInfo.phone}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-orange-600">Endereço</p>
+                  <p className="text-sm text-slate-800 font-medium">{order.deliveryInfo.address}</p>
+                  {order.deliveryInfo.referencePoint && (
+                    <p className="text-xs text-slate-500 mt-1 italic">Ref: {order.deliveryInfo.referencePoint}</p>
+                  )}
+                </div>
+                {order.deliveryInfo.observations && (
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-orange-600">Observações</p>
+                    <p className="text-xs text-slate-600">{order.deliveryInfo.observations}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border border-indigo-200 bg-indigo-50/50 p-6 rounded-2xl flex flex-col justify-center text-center">
+              <h3 className="text-sm font-bold text-indigo-800 uppercase tracking-wider border-b border-indigo-200 pb-2 mb-4">
+                Cobrança na Entrega
+              </h3>
+              <div className="space-y-4">
+                <div className={`p-4 rounded-2xl border-2 border-dashed ${order.deliveryInfo.paymentAtLocation ? 'border-orange-400 bg-orange-100' : 'border-emerald-400 bg-emerald-100'}`}>
+                  <p className="text-xs font-bold uppercase text-slate-600 mb-1">Status de Pagamento:</p>
+                  <p className={`text-lg font-black ${order.deliveryInfo.paymentAtLocation ? 'text-orange-700' : 'text-emerald-700'}`}>
+                    {order.deliveryInfo.paymentAtLocation ? 'RECEBER NO LOCAL' : 'JÁ PAGO / NÃO COBRAR'}
+                  </p>
+                </div>
+                
+                {order.deliveryInfo.paymentAtLocation && (
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-indigo-100">
+                    <p className="text-xs font-bold uppercase text-indigo-600 mb-1">VALOR A RECEBER:</p>
+                    <p className="text-3xl font-black text-indigo-900">R$ {remaining.toFixed(2)}</p>
+                    <p className="text-[10px] text-slate-400 mt-2 uppercase">Confira os itens antes de entregar</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Info Box */}
         <div className="border border-indigo-100 bg-slate-50/50 p-4 mb-6 rounded-2xl grid grid-cols-2 gap-4">
@@ -230,14 +311,14 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
         </div>
 
         {/* Items Table */}
-        {!isReceipt && (
+        {(type === 'order' || type === 'quotation' || type === 'delivery') && (
           <table className="w-full mb-6 border-collapse">
             <thead>
               <tr className="border-b border-indigo-100 text-indigo-600">
                 <th className="text-left py-2 text-[10px] uppercase tracking-wider">Item / Descrição</th>
                 <th className="text-center py-2 text-[10px] uppercase tracking-wider">Qtd</th>
-                <th className="text-right py-2 text-[10px] uppercase tracking-wider">V. Unit</th>
-                <th className="text-right py-2 text-[10px] uppercase tracking-wider">Total</th>
+                {type !== 'delivery' && <th className="text-right py-2 text-[10px] uppercase tracking-wider">V. Unit</th>}
+                {type !== 'delivery' && <th className="text-right py-2 text-[10px] uppercase tracking-wider">Total</th>}
               </tr>
             </thead>
             <tbody>
@@ -249,8 +330,8 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
                       {item.observations && <p className="text-[10px] italic text-slate-500 mt-0.5">{item.observations}</p>}
                     </td>
                     <td className="text-center py-3 text-xs text-slate-600">{item.quantity}</td>
-                    <td className="text-right py-3 text-xs text-slate-600">R$ {item.unitPrice.toFixed(2)}</td>
-                    <td className="text-right py-3 font-bold text-xs text-indigo-900">R$ {calculateItemTotal(item).toFixed(2)}</td>
+                    {type !== 'delivery' && <td className="text-right py-3 text-xs text-slate-600">R$ {item.unitPrice.toFixed(2)}</td>}
+                    {type !== 'delivery' && <td className="text-right py-3 font-bold text-xs text-indigo-900">R$ {calculateItemTotal(item).toFixed(2)}</td>}
                   </tr>
                 );
               })}
@@ -259,57 +340,69 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
         )}
 
         {/* Financial Summary */}
-        <div className="border border-indigo-100 p-6 rounded-2xl bg-indigo-50/30">
-          <h3 className="font-bold uppercase mb-4 border-b border-indigo-100 pb-2 text-xs text-indigo-900">Resumo Financeiro</h3>
-          
-          <div className="space-y-2 text-xs text-slate-600">
-            <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span>R$ {calculateSubtotal().toFixed(2)}</span>
-            </div>
+        {type !== 'delivery' && (
+          <div className="border border-indigo-100 p-6 rounded-2xl bg-indigo-50/30">
+            <h3 className="font-bold uppercase mb-4 border-b border-indigo-100 pb-2 text-xs text-indigo-900">Resumo Financeiro</h3>
             
-            {order.generalDiscountValue > 0 && (
-              <div className="flex justify-between text-rose-600">
-                <span>Desconto Geral:</span>
-                <span>
-                  {order.generalDiscountType === 'percentage' 
-                    ? `${order.generalDiscountValue}%` 
-                    : `R$ ${order.generalDiscountValue.toFixed(2)}`}
+            <div className="space-y-2 text-xs text-slate-600">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span>R$ {calculateSubtotal().toFixed(2)}</span>
+              </div>
+              
+              {order.generalDiscountValue > 0 && (
+                <div className="flex justify-between text-rose-600">
+                  <span>Desconto Geral:</span>
+                  <span>
+                    {order.generalDiscountType === 'percentage' 
+                      ? `${order.generalDiscountValue}%` 
+                      : `R$ ${order.generalDiscountValue.toFixed(2)}`}
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex justify-between font-bold text-sm border-t border-indigo-100 pt-2 mt-2 text-indigo-900">
+                <span>TOTAL:</span>
+                <span>R$ {total.toFixed(2)}</span>
+              </div>
+              
+              <div className="flex justify-between mt-4 text-emerald-700 font-bold text-sm bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                <span>Valor Recebido:</span>
+                <span>R$ {order.amountPaid.toFixed(2)}</span>
+              </div>
+              
+              <div className="flex justify-between font-bold border-t border-indigo-100 pt-2 mt-2 text-slate-800">
+                <span>Falta Pagar:</span>
+                <span className={remaining > 0 ? 'text-rose-600' : 'text-emerald-600'}>
+                  R$ {remaining.toFixed(2)}
                 </span>
               </div>
-            )}
-            
-            <div className="flex justify-between font-bold text-sm border-t border-indigo-100 pt-2 mt-2 text-indigo-900">
-              <span>TOTAL:</span>
-              <span>R$ {total.toFixed(2)}</span>
             </div>
-            
-            <div className="flex justify-between mt-4 text-emerald-700 font-bold text-sm bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-              <span>Valor Recebido:</span>
-              <span>R$ {order.amountPaid.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex justify-between font-bold border-t border-indigo-100 pt-2 mt-2 text-slate-800">
-              <span>Falta Pagar:</span>
-              <span className={remaining > 0 ? 'text-rose-600' : 'text-emerald-600'}>
-                R$ {remaining.toFixed(2)}
-              </span>
+
+            <div className="mt-6 pt-4 border-t border-indigo-100 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-indigo-500 mb-1">Forma de Pagamento</p>
+                <p className="font-bold uppercase text-xs text-slate-800">{order.paymentMethod}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold uppercase text-indigo-500 mb-1">Status Pagamento</p>
+                <p className="font-bold uppercase text-xs text-slate-800">{order.paymentStatus}</p>
+              </div>
             </div>
           </div>
+        )}
 
-          <div className="mt-6 pt-4 border-t border-indigo-100 grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-[10px] font-bold uppercase text-indigo-500 mb-1">Forma de Pagamento</p>
-              <p className="font-bold uppercase text-xs text-slate-800">{order.paymentMethod}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase text-indigo-500 mb-1">Status Pagamento</p>
-              <p className="font-bold uppercase text-xs text-slate-800">{order.paymentStatus}</p>
+        {type === 'delivery' && (
+          <div className="mt-8 pt-8 border-t-2 border-dashed border-slate-200 text-center">
+            <div className="inline-block border-2 border-slate-800 p-4 rounded-xl">
+              <p className="text-xs font-bold uppercase mb-1">Assinatura do Recebedor</p>
+              <div className="w-64 h-12 border-b border-slate-400"></div>
+              <p className="text-[10px] text-slate-400 mt-1">Data: ____/____/____ Hora: ____:____</p>
             </div>
           </div>
-        </div>
+        )}
 
-        {!isReceipt && (
+        {type !== 'delivery' && !isReceipt && (
           <div className="mt-6 border border-indigo-100 p-4 rounded-2xl bg-slate-50/50">
             <h3 className="font-bold uppercase mb-1 text-[10px] text-indigo-500">Status do Pedido</h3>
             <p className="font-bold text-sm uppercase text-slate-800">{order.status}</p>

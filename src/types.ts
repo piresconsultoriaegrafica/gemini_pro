@@ -89,6 +89,16 @@ export interface Order {
   deleted?: boolean;
   finalized?: boolean;
   isQuotation?: boolean;
+  deliveryInfo?: {
+    isDelivery: boolean;
+    senderName: string;
+    receiverName: string;
+    phone: string;
+    address: string;
+    referencePoint: string;
+    observations: string;
+    paymentAtLocation: boolean;
+  };
 }
 
 export interface Branch {
