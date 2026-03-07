@@ -143,7 +143,7 @@ export function Dashboard() {
           <div className="flex items-center bg-slate-100/50 p-1 rounded-xl border border-slate-200/60 shadow-inner gap-1">
             <button 
               onClick={() => setShowCharts(!showCharts)}
-              className={`p-2 rounded-lg transition-all duration-200 ${showCharts ? 'bg-white shadow-sm text-indigo-600 scale-100 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+              className={`p-2 rounded-lg transition-all duration-200 ${showCharts ? 'bg-indigo-50 shadow-sm text-indigo-600 ring-1 ring-indigo-400' : 'text-slate-400 bg-slate-200 hover:bg-slate-300 hover:text-slate-600'}`}
               title="Visualização de Gráficos"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
@@ -151,14 +151,14 @@ export function Dashboard() {
             <div className="w-px h-4 bg-slate-300/50 mx-1"></div>
             <button 
               onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'kanban' ? 'bg-white shadow-sm text-indigo-600 scale-100 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'kanban' ? 'bg-indigo-50 shadow-sm text-indigo-600 ring-1 ring-indigo-400' : 'text-slate-400 bg-slate-200 hover:bg-slate-300 hover:text-slate-600'}`}
               title="Visualização Kanban"
             >
               <LayoutGrid size={18} />
             </button>
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'list' ? 'bg-white shadow-sm text-indigo-600 scale-100 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'list' ? 'bg-indigo-50 shadow-sm text-indigo-600 ring-1 ring-indigo-400' : 'text-slate-400 bg-slate-200 hover:bg-slate-300 hover:text-slate-600'}`}
               title="Visualização em Lista"
             >
               <List size={18} />

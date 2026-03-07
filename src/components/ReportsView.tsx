@@ -193,14 +193,14 @@ export function ReportsView() {
           <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200 mr-2">
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}`}
+              className={`p-1.5 rounded-md transition-all duration-200 ${viewMode === 'list' ? 'bg-indigo-50 shadow-sm text-indigo-600 ring-1 ring-indigo-400' : 'text-slate-400 bg-slate-200 hover:bg-slate-300 hover:text-slate-600'}`}
               title="Visualização em Lista"
             >
               <IconContainer size="sm" active={viewMode === 'list'}><List size={16} /></IconContainer>
             </button>
             <button 
               onClick={() => setViewMode('chart')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'chart' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}`}
+              className={`p-1.5 rounded-md transition-all duration-200 ${viewMode === 'chart' ? 'bg-indigo-50 shadow-sm text-indigo-600 ring-1 ring-indigo-400' : 'text-slate-400 bg-slate-200 hover:bg-slate-300 hover:text-slate-600'}`}
               title="Visualização em Gráficos"
             >
               <IconContainer size="sm" active={viewMode === 'chart'}><BarChart2 size={16} /></IconContainer>
