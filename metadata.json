@@ -1,0 +1,5 @@
+{
+  "name": "Empresa Dashboard Pro",
+  "description": "Sistema de gestão para empresas com controle de fila, status de produção, pagamentos, impressão de recibos e ordens de serviço.",
+  "requestFramePermissions": []
+}
