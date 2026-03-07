@@ -322,18 +322,6 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Caminho Padrão para Backups</label>
-                <input 
-                  type="text" 
-                  value={formData.defaultBackupPath || ''} 
-                  onChange={e => setFormData({...formData, defaultBackupPath: e.target.value})}
-                  className="input-3d w-full px-3 py-2 text-sm"
-                  placeholder="C:\Backups ou /home/user/backups"
-                />
-                <p className="text-xs text-slate-500 mt-1">Caminho local onde os backups serão salvos automaticamente.</p>
-              </div>
-
-              <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Modo de Visualização do Sistema</label>
                 <select
                   value={formData.viewMode || 'auto'}

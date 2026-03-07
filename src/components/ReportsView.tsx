@@ -579,12 +579,12 @@ export function ReportsView() {
 
         {/* Hidden printable content */}
         <div className="hidden">
-          <div ref={printRef} className="p-8 bg-white text-black print:p-0" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <div ref={printRef} className="p-8 font-sans text-slate-800 bg-white print:p-4">
             {companyInfo && (
-              <div className="flex items-center justify-between mb-6 border-b border-gray-300 pb-4">
+              <div className="flex items-center justify-between mb-6 border-b border-indigo-100 pb-6">
                 <div className="flex items-center gap-6">
                   {companyInfo.logoUrl && (
-                    <div className="w-32 h-32 flex-shrink-0 flex items-center justify-center bg-white rounded-lg p-2 border border-gray-100">
+                    <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-2xl p-2 border border-indigo-100 shadow-sm">
                       <img 
                         src={companyInfo.logoUrl} 
                         alt="Logo" 
@@ -594,14 +594,14 @@ export function ReportsView() {
                     </div>
                   )}
                   <div>
-                    <h2 className="text-2xl font-bold uppercase">{companyInfo.name}</h2>
-                    <p className="text-sm text-gray-600">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
-                    <p className="text-sm text-gray-600">{companyInfo.address}</p>
+                    <h2 className="text-xl font-bold uppercase text-indigo-900">{companyInfo.name}</h2>
+                    <p className="text-xs text-slate-600">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
+                    <p className="text-xs text-slate-600">{companyInfo.address}</p>
                     {companyInfo.branches && companyInfo.branches.length > 0 && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        <p className="font-semibold">Filiais:</p>
+                      <div className="mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase">Filiais:</p>
                         {companyInfo.branches.map(b => (
-                          <p key={b.id}>{b.name}: {b.address}</p>
+                          <p key={b.id} className="text-[10px] text-slate-600">{b.name}: {b.address}</p>
                         ))}
                       </div>
                     )}
@@ -609,63 +609,66 @@ export function ReportsView() {
                 </div>
               </div>
             )}
-            <h1 className="text-2xl font-black uppercase text-center mb-2 tracking-widest">RELATÓRIO FINANCEIRO</h1>
-            <p className="text-center text-gray-600 mb-6">
+            <h1 className="text-xl font-bold uppercase text-center mb-6 tracking-widest text-indigo-900 bg-indigo-50 py-3 rounded-2xl">RELATÓRIO FINANCEIRO</h1>
+            <p className="text-center text-slate-500 mb-6 text-xs">
               Período: {startDate ? format(parseISO(startDate), 'dd/MM/yyyy') : 'Início'} até {endDate ? format(parseISO(endDate), 'dd/MM/yyyy') : 'Hoje'}
             </p>
             
-            <div className="flex justify-between mb-8 border-b pb-4">
-              <div>
-                <p className="text-sm text-gray-500">Faturamento Total</p>
-                <p className="text-xl font-bold">R$ {totalRevenue.toFixed(2)}</p>
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 uppercase font-bold">Faturamento Total</p>
+                <p className="text-sm font-bold text-indigo-900">R$ {totalRevenue.toFixed(2)}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Valor Recebido</p>
-                <p className="text-xl font-bold text-green-600">R$ {totalPaid.toFixed(2)}</p>
+              <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                <p className="text-[10px] text-emerald-600 uppercase font-bold">Valor Recebido</p>
+                <p className="text-sm font-bold text-emerald-900">R$ {totalPaid.toFixed(2)}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Valor Pendente</p>
-                <p className="text-xl font-bold text-red-600">R$ {totalPending.toFixed(2)}</p>
+              <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                <p className="text-[10px] text-rose-600 uppercase font-bold">Valor Pendente</p>
+                <p className="text-sm font-bold text-rose-900">R$ {totalPending.toFixed(2)}</p>
               </div>
             </div>
 
-            <h2 className="text-lg font-bold mb-4 mt-8">Vendas por Produto</h2>
-            <table className="w-full border-collapse mb-8">
+            <h2 className="text-sm font-bold mb-3 text-indigo-900 uppercase tracking-wider">Vendas por Produto</h2>
+            <table className="w-full border-collapse mb-6">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 p-2 text-left">Produto</th>
-                  <th className="border border-gray-300 p-2 text-right">Qtd</th>
-                  <th className="border border-gray-300 p-2 text-right">Receita</th>
+                <tr className="bg-indigo-50 text-indigo-900">
+                  <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tl-2xl">Produto</th>
+                  <th className="border-b border-indigo-100 p-3 text-right text-[10px] uppercase tracking-wider">Qtd</th>
+                  <th className="border-b border-indigo-100 p-3 text-right text-[10px] uppercase tracking-wider rounded-tr-2xl">Receita</th>
                 </tr>
               </thead>
               <tbody>
                 {productsSold.map(([name, data], i) => (
-                  <tr key={i}>
-                    <td className="border border-gray-300 p-2">{name}</td>
-                    <td className="border border-gray-300 p-2 text-right">{data.quantity}</td>
-                    <td className="border border-gray-300 p-2 text-right">R$ {data.revenue.toFixed(2)}</td>
+                  <tr key={i} className={`text-xs ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                    <td className="border-b border-slate-100 p-3 text-slate-800 font-medium">{name}</td>
+                    <td className="border-b border-slate-100 p-3 text-slate-600 text-right">{data.quantity}</td>
+                    <td className="border-b border-slate-100 p-3 text-slate-600 text-right">R$ {data.revenue.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <h2 className="text-lg font-bold mb-4 mt-8">Recebimentos por Forma de Pagamento</h2>
-            <table className="w-full border-collapse mb-8">
+            <h2 className="text-sm font-bold mb-3 text-indigo-900 uppercase tracking-wider">Recebimentos por Forma de Pagamento</h2>
+            <table className="w-full border-collapse mb-6">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 p-2 text-left">Método</th>
-                  <th className="border border-gray-300 p-2 text-right">Valor</th>
+                <tr className="bg-indigo-50 text-indigo-900">
+                  <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tl-2xl">Método</th>
+                  <th className="border-b border-indigo-100 p-3 text-right text-[10px] uppercase tracking-wider rounded-tr-2xl">Valor</th>
                 </tr>
               </thead>
               <tbody>
                 {paymentMethods.map(([method, amount], i) => (
-                  <tr key={i}>
-                    <td className="border border-gray-300 p-2">{method}</td>
-                    <td className="border border-gray-300 p-2 text-right">R$ {amount.toFixed(2)}</td>
+                  <tr key={i} className={`text-xs ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                    <td className="border-b border-slate-100 p-3 text-slate-800 font-medium">{method}</td>
+                    <td className="border-b border-slate-100 p-3 text-slate-600 text-right">R$ {amount.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <div className="mt-12 text-center text-[10px] text-slate-400 border-t border-indigo-50 pt-4">
+              <p className="font-bold text-slate-500 mb-1">JESUS É BOM, DEUS É FIEL</p>
+            </div>
           </div>
         </div>
       </div>

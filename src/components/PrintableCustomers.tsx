@@ -46,17 +46,20 @@ export const PrintableCustomers = React.forwardRef<HTMLDivElement, PrintableCust
             {c.document && <p>DOC: {c.document}</p>}
           </div>
         ))}
+        <div className="text-center mt-4 pt-2 border-t border-black border-dashed">
+          <p className="font-bold">JESUS É BOM, DEUS É FIEL</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div ref={ref} className="p-8 bg-white text-black print:p-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+    <div ref={ref} className="p-8 font-sans text-slate-800 bg-white print:p-4">
       {companyInfo && (
-        <div className="flex items-center justify-between mb-6 border-b border-gray-300 pb-4">
+        <div className="flex items-center justify-between mb-6 border-b border-indigo-100 pb-6">
           <div className="flex items-center gap-6">
             {companyInfo.logoUrl && (
-              <div className="w-32 h-32 flex-shrink-0 flex items-center justify-center bg-white rounded-lg p-2 border border-gray-100">
+              <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-2xl p-2 border border-indigo-100 shadow-sm">
                 <img 
                   src={companyInfo.logoUrl} 
                   alt="Logo" 
@@ -66,14 +69,14 @@ export const PrintableCustomers = React.forwardRef<HTMLDivElement, PrintableCust
               </div>
             )}
             <div>
-              <h2 className="text-2xl font-bold uppercase">{companyInfo.name}</h2>
-              <p className="text-sm text-gray-600">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
-              <p className="text-sm text-gray-600">{companyInfo.address}</p>
+              <h2 className="text-xl font-bold uppercase text-indigo-900">{companyInfo.name}</h2>
+              <p className="text-xs text-slate-600">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
+              <p className="text-xs text-slate-600">{companyInfo.address}</p>
               {companyInfo.branches && companyInfo.branches.length > 0 && (
-                <div className="mt-2 text-sm text-gray-600">
-                  <p className="font-semibold">Filiais:</p>
+                <div className="mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Filiais:</p>
                   {companyInfo.branches.map(b => (
-                    <p key={b.id}>{b.name}: {b.address}</p>
+                    <p key={b.id} className="text-[10px] text-slate-600">{b.name}: {b.address}</p>
                   ))}
                 </div>
               )}
@@ -81,27 +84,32 @@ export const PrintableCustomers = React.forwardRef<HTMLDivElement, PrintableCust
           </div>
         </div>
       )}
-      <h1 className="text-2xl font-black uppercase text-center mb-6 tracking-widest">LISTA DE CLIENTES</h1>
+      <h1 className="text-xl font-bold uppercase text-center mb-6 tracking-widest text-indigo-900 bg-indigo-50 py-3 rounded-2xl">LISTA DE CLIENTES</h1>
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 p-2 text-left">Nome</th>
-            <th className="border border-gray-300 p-2 text-left">Telefone</th>
-            <th className="border border-gray-300 p-2 text-left">Email</th>
-            <th className="border border-gray-300 p-2 text-left">Documento</th>
+          <tr className="bg-indigo-50 text-indigo-900">
+            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tl-2xl">Nome</th>
+            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider">Telefone</th>
+            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider">Email</th>
+            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tr-2xl">Documento</th>
           </tr>
         </thead>
         <tbody>
-          {customers.map(c => (
-            <tr key={c.id}>
-              <td className="border border-gray-300 p-2">{c.name}</td>
-              <td className="border border-gray-300 p-2">{c.phone || '-'}</td>
-              <td className="border border-gray-300 p-2">{c.email || '-'}</td>
-              <td className="border border-gray-300 p-2">{c.document || '-'}</td>
+          {customers.map((c, index) => (
+            <tr key={c.id} className={`text-xs ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+              <td className="border-b border-slate-100 p-3 text-slate-800 font-medium">{c.name}</td>
+              <td className="border-b border-slate-100 p-3 text-slate-600">{c.phone || '-'}</td>
+              <td className="border-b border-slate-100 p-3 text-slate-600">{c.email || '-'}</td>
+              <td className="border-b border-slate-100 p-3 text-slate-600">{c.document || '-'}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div className="mt-12 text-center text-[10px] text-slate-400 border-t border-indigo-50 pt-4">
+        <p className="font-bold text-slate-500 mb-1">JESUS É BOM, DEUS É FIEL</p>
+      </div>
     </div>
   );
 });
+
+PrintableCustomers.displayName = 'PrintableCustomers';
