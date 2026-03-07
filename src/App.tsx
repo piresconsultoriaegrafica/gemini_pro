@@ -15,18 +15,21 @@ import { CalendarView } from './components/CalendarView';
 import { FaviconUpdater } from './components/FaviconUpdater';
 import { LoginScreen } from './components/LoginScreen';
 import { LogoutConfirmModal } from './components/LogoutConfirmModal';
-import { Employee } from './types';
+import { DeliveryAlertModal } from './components/DeliveryAlertModal';
+import { Employee, Order } from './types';
 import { CheckCircle } from 'lucide-react';
 
 function AppContent() {
   const { 
     companyInfo, orders, customers, products, employees, 
     productionStatuses, paymentStatuses, paymentMethods,
-    isReady
+    isReady, backupDatabase
   } = useAppContext();
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showDeliveryAlert, setShowDeliveryAlert] = useState(false);
+  const [alertOrders, setAlertOrders] = useState<{overdue: Order[], upcoming: Order[]}>({overdue: [], upcoming: []});
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('empresa-sidebar-collapsed');
@@ -45,6 +48,39 @@ function AppContent() {
     const saved = sessionStorage.getItem('empresa-current-user');
     return saved ? JSON.parse(saved) : null;
   });
+
+  useEffect(() => {
+    if (currentUser && !sessionStorage.getItem('delivery-alert-shown')) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const overdue: Order[] = [];
+      const upcoming: Order[] = [];
+      
+      orders.forEach(order => {
+        if (order.archived || order.deleted || order.finalized || !order.estimatedDeliveryDate) return;
+        
+        const deliveryDate = new Date(order.estimatedDeliveryDate);
+        deliveryDate.setHours(0, 0, 0, 0);
+        
+        if (deliveryDate < today) {
+          overdue.push(order);
+        } else {
+          const diffTime = deliveryDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays <= 3) {
+            upcoming.push(order);
+          }
+        }
+      });
+      
+      if (overdue.length > 0 || upcoming.length > 0) {
+        setAlertOrders({overdue, upcoming});
+        setShowDeliveryAlert(true);
+        sessionStorage.setItem('delivery-alert-shown', 'true');
+      }
+    }
+  }, [currentUser, orders]);
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -169,6 +205,15 @@ function AppContent() {
                 window.location.href = 'about:blank';
               }
             }}
+            backupDatabase={backupDatabase}
+          />
+        )}
+
+        {showDeliveryAlert && (
+          <DeliveryAlertModal 
+            onClose={() => setShowDeliveryAlert(false)}
+            overdueOrders={alertOrders.overdue}
+            upcomingOrders={alertOrders.upcoming}
           />
         )}
       </div>

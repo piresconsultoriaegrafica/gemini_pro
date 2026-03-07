@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { AppState, CompanyInfo, Order, Customer, CustomOption, Product, Employee, Role } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { initDB, getAppState, saveAppState, importDatabase, exportDatabase } from './services/sqliteService';
+import { BackupProgressModal } from './components/BackupProgressModal';
+
 
 const defaultCompanyInfo: CompanyInfo = {
   name: 'Minha Empresa',
@@ -83,7 +85,7 @@ interface AppContextType extends AppState {
   updatePaymentStatuses: (statuses: CustomOption[]) => void;
   updatePaymentMethods: (methods: CustomOption[]) => void;
   importState: (newState: AppState) => void;
-  exportDatabaseFile: () => void;
+  backupDatabase: (isManual?: boolean) => Promise<void>;
   importDatabaseFile: (file: File) => Promise<void>;
 }
 
@@ -92,6 +94,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<AppState>(defaultState);
   const [isReady, setIsReady] = useState(false);
+  const [backupProgress, setBackupProgress] = useState(0);
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -132,16 +136,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const exportDatabaseFile = async () => {
+  const backupDatabase = async (isManual: boolean = false) => {
+    setIsBackupModalOpen(true);
+    setBackupProgress(10);
+    
     const blob = await exportDatabase();
-    if (!blob) return;
+    if (!blob) {
+      setIsBackupModalOpen(false);
+      setBackupProgress(0);
+      return;
+    }
+    setBackupProgress(50);
 
     const now = new Date();
     const dateStr = `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
     const fileName = `backup_sistema_${dateStr}.sqlite`;
 
-    // Tentar usar a API de Acesso ao Sistema de Arquivos (File System Access API)
-    if ('showSaveFilePicker' in window) {
+    setBackupProgress(80);
+
+    // Manual backup: try File System Access API
+    if (isManual && 'showSaveFilePicker' in window) {
       try {
         const handle = await (window as any).showSaveFilePicker({
           suggestedName: fileName,
@@ -153,14 +167,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const writable = await handle.createWritable();
         await writable.write(blob);
         await writable.close();
+        setBackupProgress(100);
+        setTimeout(() => {
+          setIsBackupModalOpen(false);
+          setBackupProgress(0);
+        }, 500);
         return;
       } catch (err) {
-        // Se o usuário cancelar ou ocorrer erro, prosseguir com o download padrão
         console.warn("File System Access API não utilizada ou cancelada, usando fallback:", err);
       }
     }
 
-    // Fallback: Download tradicional
+    // Fallback or Automatic backup: Download tradicional
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -169,6 +187,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    setBackupProgress(100);
+    setTimeout(() => {
+      setIsBackupModalOpen(false);
+      setBackupProgress(0);
+    }, 500);
   };
 
   const importDatabaseFile = async (file: File) => {
@@ -403,11 +427,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         updatePaymentStatuses,
         updatePaymentMethods,
         importState,
-        exportDatabaseFile,
+        backupDatabase,
         importDatabaseFile,
       }}
     >
       {children}
+      {isBackupModalOpen && <BackupProgressModal progress={backupProgress} />}
     </AppContext.Provider>
   );
 };

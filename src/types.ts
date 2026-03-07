@@ -106,6 +106,7 @@ export interface CompanyInfo {
   logoUrl: string;
   backgroundImageUrl?: string;
   loginIconUrl?: string;
+  defaultBackupPath?: string;
   printerPaperSize?: '50mm' | '80mm' | 'standard';
   directPrint?: boolean;
   instagram?: string;

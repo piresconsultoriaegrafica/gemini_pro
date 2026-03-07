@@ -233,7 +233,7 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
   const handleSelectProduct = (itemId: string, product: any, variation?: any) => {
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const price = variation ? variation.price : product.basePrice;
-    const costPrice = product.costPrice || 0;
+    const costPrice = variation ? (variation.costPrice || 0) : (product.costPrice || 0);
     
     updateItem(itemId, 'name', name);
     updateItem(itemId, 'unitPrice', price);
