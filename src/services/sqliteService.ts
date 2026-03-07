@@ -36,7 +36,10 @@ export const saveAppState = async (state: AppState) => {
 export const exportDatabase = async (): Promise<Blob | null> => {
   try {
     const res = await fetch('/api/export');
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error("Export failed with status:", res.status, await res.text());
+      return null;
+    }
     return await res.blob();
   } catch (e) {
     console.error("Error exporting DB", e);

@@ -151,10 +151,17 @@ async function startServer() {
 
   // Export database file
   app.get("/api/export", (req, res) => {
+    console.log("Export database request received");
     try {
       // Checkpoint WAL to ensure main file is up to date
       db.pragma('wal_checkpoint(RESTART)');
-      res.download(dbPath, "backup.sqlite");
+      console.log("WAL checkpoint completed");
+      
+      const fileBuffer = fs.readFileSync(dbPath);
+      res.setHeader('Content-Type', 'application/x-sqlite3');
+      res.setHeader('Content-Disposition', 'attachment; filename="backup.sqlite"');
+      res.send(fileBuffer);
+      console.log("Database exported successfully");
     } catch (error) {
       console.error("Error exporting database:", error);
       res.status(500).json({ error: "Failed to export database" });

@@ -33,83 +33,22 @@ export function exportToCSV(data: any[], filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export const exportToExcel = async (data: any[], filename: string) => {
-  if (!data || data.length === 0) return;
+export const exportToExcel = (data: any[], filename: string) => {
+  console.log("exportToExcel called with:", { dataCount: data?.length, filename });
+  if (!data || data.length === 0) {
+    console.warn("No data to export");
+    return;
+  }
 
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Dados');
-
-  // Extract headers
-  const headers = Object.keys(data[0]);
-
-  // Add header row
-  const headerRow = worksheet.addRow(headers);
-
-  // Style header row
-  headerRow.eachCell((cell) => {
-    cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF4F46E5' } // Indigo 600
-    };
-    cell.font = {
-      color: { argb: 'FFFFFFFF' },
-      bold: true
-    };
-    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-    cell.border = {
-      top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-      left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-      bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-      right: { style: 'thin', color: { argb: 'FFD1D5DB' } }
-    };
-  });
-
-  // Add data rows
-  data.forEach((item, index) => {
-    const row = worksheet.addRow(Object.values(item));
-    
-    // Alternate row colors
-    const isEven = index % 2 === 0;
-    
-    row.eachCell((cell) => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: isEven ? 'FFF9FAFB' : 'FFFFFFFF' } // Gray 50 / White
-      };
-      cell.border = {
-        top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-        left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-        bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-        right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
-      };
-      cell.alignment = { vertical: 'middle' };
-    });
-  });
-
-  // Auto-fit columns
-  worksheet.columns.forEach(column => {
-    let maxLength = 0;
-    column.eachCell!({ includeEmpty: true }, cell => {
-      const columnLength = cell.value ? cell.value.toString().length : 10;
-      if (columnLength > maxLength) {
-        maxLength = columnLength;
-      }
-    });
-    column.width = maxLength < 10 ? 10 : maxLength + 2;
-  });
-
-  // Enable auto filter
-  worksheet.autoFilter = {
-    from: { row: 1, column: 1 },
-    to: { row: 1, column: headers.length }
-  };
-
-  // Generate and save file
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  saveAs(blob, `${filename}.xlsx`);
+  try {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Dados");
+    XLSX.writeFile(workbook, `${filename}.xlsx`);
+    console.log("File saved");
+  } catch (error) {
+    console.error("Error in exportToExcel:", error);
+  }
 };
 
 export const exportToPDF = async (title: string, headers: string[], data: any[][], filename: string, companyInfo?: any) => {
