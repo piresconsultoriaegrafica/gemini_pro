@@ -139,7 +139,7 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
       ...prev,
       variations: [
         ...prev.variations,
-        { id: uuidv4(), name: '', price: 0 },
+        { id: uuidv4(), name: '', price: 0, costPrice: 0, markup: 0 },
       ],
     }));
   };
@@ -150,6 +150,45 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
       variations: prev.variations.map((v) => 
         v.id === id ? { ...v, [field]: value } : v
       ),
+    }));
+  };
+
+  const handleVariationCostPriceChange = (id: string, cost: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      variations: prev.variations.map((v) => {
+        if (v.id === id) {
+          const newPrice = updateBasePrice(cost, v.markup);
+          return { ...v, costPrice: cost, price: newPrice };
+        }
+        return v;
+      }),
+    }));
+  };
+
+  const handleVariationMarkupChange = (id: string, markup: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      variations: prev.variations.map((v) => {
+        if (v.id === id) {
+          const newPrice = updateBasePrice(v.costPrice, markup);
+          return { ...v, markup, price: newPrice };
+        }
+        return v;
+      }),
+    }));
+  };
+
+  const handleVariationPriceChange = (id: string, price: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      variations: prev.variations.map((v) => {
+        if (v.id === id) {
+          const newMarkup = updateMarkup(price, v.costPrice);
+          return { ...v, price, markup: newMarkup };
+        }
+        return v;
+      }),
     }));
   };
 
@@ -275,7 +314,7 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Preço de Custo (R$)</label>
                 <input
@@ -314,6 +353,13 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
                   onChange={(e) => handleBasePriceChange(parseFloat(e.target.value) || 0)}
                   className="input-3d w-full px-3 py-2 text-sm font-bold text-indigo-700"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Lucro (R$)</label>
+                <div className="input-3d w-full px-3 py-2 text-sm font-bold text-emerald-700 bg-slate-50">
+                  {(formData.basePrice - formData.costPrice).toFixed(2)}
+                </div>
               </div>
             </div>
 
@@ -494,6 +540,29 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
                           />
                         </div>
                         <div className="w-32">
+                          <label className="block text-[10px] text-slate-500 mb-0.5 uppercase font-bold">Custo (R$)</label>
+                          <input
+                            type="number"
+                            required
+                            min="0"
+                            step="0.01"
+                            value={variation.costPrice}
+                            onChange={(e) => handleUpdateVariation(variation.id, 'costPrice', parseFloat(e.target.value) || 0)}
+                            className="input-3d w-full px-3 py-1.5 text-sm"
+                          />
+                        </div>
+                        <div className="w-24">
+                          <label className="block text-[10px] text-slate-500 mb-0.5 uppercase font-bold">Markup (%)</label>
+                          <input
+                            type="number"
+                            required
+                            step="0.01"
+                            value={variation.markup}
+                            onChange={(e) => handleUpdateVariation(variation.id, 'markup', parseFloat(e.target.value) || 0)}
+                            className="input-3d w-full px-3 py-1.5 text-sm"
+                          />
+                        </div>
+                        <div className="w-32">
                           <label className="block text-[10px] text-slate-500 mb-0.5 uppercase font-bold">Preço (R$)</label>
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-bold">R$</span>
@@ -506,6 +575,12 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
                               onChange={(e) => handleUpdateVariation(variation.id, 'price', parseFloat(e.target.value) || 0)}
                               className="input-3d w-full pl-8 pr-3 py-1.5 text-sm font-mono font-bold text-slate-700"
                             />
+                          </div>
+                        </div>
+                        <div className="w-24">
+                          <label className="block text-[10px] text-slate-500 mb-0.5 uppercase font-bold">Lucro (R$)</label>
+                          <div className="input-3d w-full px-3 py-1.5 text-sm font-bold text-emerald-700 bg-slate-50">
+                            {(variation.price - variation.costPrice).toFixed(2)}
                           </div>
                         </div>
                         <button

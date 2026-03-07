@@ -534,6 +534,16 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
                       />
                     </div>
                     <div className="md:col-span-2">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Custo Unit. (R$)</label>
+                      <input 
+                        type="number" 
+                        min="0" step="0.01"
+                        value={item.costPrice} 
+                        onChange={e => updateItem(item.id, 'costPrice', Number(e.target.value))}
+                        className="input-3d w-full px-3 py-2 text-right"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
                       <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Valor Unit. (R$)</label>
                       <input 
                         type="number" 
@@ -672,6 +682,11 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
                 <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                   <span className="font-bold text-slate-800 text-base">Total Final:</span>
                   <span className="font-mono font-bold text-2xl text-indigo-700">R$ {calculateTotal().toFixed(2)}</span>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
+                  <span className="font-bold text-slate-800 text-base">Lucro Total:</span>
+                  <span className="font-mono font-bold text-xl text-emerald-700">R$ {(calculateTotal() - (formData.items || []).reduce((sum, item) => sum + (item.costPrice * item.quantity), 0)).toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between items-center text-xs bg-slate-50 p-2 rounded-lg border border-slate-100">

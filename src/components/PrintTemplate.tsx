@@ -49,7 +49,7 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
       const subtitleClass = is50mm ? 'text-[10px]' : 'text-xs';
       
       return (
-        <div ref={ref} className={`font-mono text-black bg-white mx-auto p-2 ${containerClass} leading-tight print:p-0`}>
+        <div ref={ref} className={`font-mono text-black bg-white mx-auto p-2 ${containerClass} leading-tight print:p-4`}>
           {/* Header */}
           <div className="text-center mb-3 border-b border-black pb-2 border-dashed">
             {companyInfo.logoUrl && (
@@ -93,28 +93,28 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
             <p><strong>TEL:</strong> {order.customerPhone}</p>
             {employeeName && <p><strong>ATEND:</strong> {employeeName}</p>}
             <p><strong>DATA:</strong> {format(new Date(order.createdAt), 'dd/MM/yy HH:mm')}</p>
-            <p><strong>ENTREGA:</strong> {order.estimatedDeliveryDate ? format(new Date(order.estimatedDeliveryDate), 'dd/MM/yy') : 'A combinar'}</p>
           </div>
 
-          {/* Items */}
-          <div className="mb-3 border-b border-black pb-2 border-dashed">
-            <p className="font-bold mb-1 border-b border-black">QTD x DESCRIÇÃO</p>
-            {order.items.map((item, index) => {
-              const itemTotal = calculateItemTotal(item);
-              return (
-                <div key={item.id} className="mb-2">
-                  <div className="flex justify-between">
-                    <span className="font-bold">{item.quantity}x {item.name}</span>
+          {!isReceipt && (
+            <div className="mb-3 border-b border-black pb-2 border-dashed">
+              <p className="font-bold mb-1 border-b border-black">QTD x DESCRIÇÃO</p>
+              {order.items.map((item, index) => {
+                const itemTotal = calculateItemTotal(item);
+                return (
+                  <div key={item.id} className="mb-2">
+                    <div className="flex justify-between">
+                      <span className="font-bold">{item.quantity}x {item.name}</span>
+                    </div>
+                    {item.observations && <div className="text-[9px] italic ml-4">- {item.observations}</div>}
+                    <div className="flex justify-between ml-4">
+                      <span>UN: R${item.unitPrice.toFixed(2)}</span>
+                      <span className="font-bold">R${itemTotal.toFixed(2)}</span>
+                    </div>
                   </div>
-                  {item.observations && <div className="text-[9px] italic ml-4">- {item.observations}</div>}
-                  <div className="flex justify-between ml-4">
-                    <span>UN: R${item.unitPrice.toFixed(2)}</span>
-                    <span className="font-bold">R${itemTotal.toFixed(2)}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Totals */}
           <div className="mb-3 border-b border-black pb-2 border-dashed">
@@ -144,29 +144,14 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
               <span>FALTA:</span>
               <span>R$ {remaining.toFixed(2)}</span>
             </div>
+            <div className="mt-2 pt-2 border-t border-black border-dashed">
+              <p><strong>FORMA:</strong> {order.paymentMethod}</p>
+              <p><strong>STATUS:</strong> {order.paymentStatus}</p>
+            </div>
           </div>
 
-          {/* Observations */}
-          {(order.generalObservations || totalDiscount > 0) && (
-            <div className="mb-3 border-b border-black pb-2 border-dashed">
-              {order.generalObservations && (
-                <div className="mb-2">
-                  <p className="font-bold">OBSERVAÇÕES:</p>
-                  <p className="whitespace-pre-wrap">{order.generalObservations}</p>
-                </div>
-              )}
-              {totalDiscount > 0 && (
-                <div className="text-center font-bold border-2 border-black p-2 my-2 bg-slate-50">
-                  <p className="text-[10px]">VOCÊ ECONOMIZOU NESTE PEDIDO:</p>
-                  <p className="text-sm">R$ {totalDiscount.toFixed(2)}</p>
-                </div>
-              )}
-            </div>
-          )}
-
           <div className="text-center mt-4">
-            <p className="font-bold">STATUS: {order.status}</p>
-            <p className="mt-2 text-[9px]">Obrigado pela preferência!</p>
+            <p className="text-[9px]">Obrigado pela preferência!</p>
             <p className="text-[9px]">Volte sempre!</p>
             <div className="h-8"></div> {/* Spacing for tear */}
           </div>
@@ -175,7 +160,7 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
     }
 
     return (
-      <div ref={ref} className="p-8 font-sans text-black bg-white max-w-[800px] mx-auto print:max-w-none print:w-full print:p-0">
+      <div ref={ref} className="p-8 font-sans text-black bg-white max-w-[800px] mx-auto print:max-w-none print:w-full print:p-4">
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-black pb-6 mb-6">
           <div className="flex items-center gap-6">
@@ -240,118 +225,107 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
           <div className="text-right">
             <p className="text-xs font-bold uppercase text-gray-600">Data do Pedido</p>
             <p className="font-bold">{format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}</p>
-            <p className="text-xs font-bold uppercase text-gray-600 mt-2">Previsão de Entrega</p>
-            <p className="font-bold">{order.estimatedDeliveryDate ? format(new Date(order.estimatedDeliveryDate), 'dd/MM/yyyy') : 'A combinar'}</p>
           </div>
         </div>
 
         {/* Items Table */}
-        <table className="w-full mb-6 border-collapse">
-          <thead>
-            <tr className="border-b-2 border-black">
-              <th className="text-left py-2 text-sm uppercase">Item / Descrição</th>
-              <th className="text-center py-2 text-sm uppercase">Qtd</th>
-              <th className="text-right py-2 text-sm uppercase">V. Unit</th>
-              {isReceipt && <th className="text-right py-2 text-sm uppercase">Desc.</th>}
-              <th className="text-right py-2 text-sm uppercase">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.items.map((item, index) => {
-              const itemSubtotal = item.quantity * item.unitPrice;
-              const itemDiscount = item.discountType === 'percentage' 
-                ? itemSubtotal * (item.discountValue / 100) 
-                : item.discountValue;
-
-              return (
-                <React.Fragment key={item.id}>
-                  <tr className="border-b border-gray-300">
+        {!isReceipt && (
+          <table className="w-full mb-6 border-collapse">
+            <thead>
+              <tr className="border-b-2 border-black">
+                <th className="text-left py-2 text-sm uppercase">Item / Descrição</th>
+                <th className="text-center py-2 text-sm uppercase">Qtd</th>
+                <th className="text-right py-2 text-sm uppercase">V. Unit</th>
+                <th className="text-right py-2 text-sm uppercase">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {order.items.map((item, index) => {
+                return (
+                  <tr key={item.id} className="border-b border-gray-300">
                     <td className="py-3">
                       <p className="font-bold">{item.name}</p>
                       {item.observations && <p className="text-xs italic text-gray-600 mt-1">{item.observations}</p>}
                     </td>
                     <td className="text-center py-3">{item.quantity}</td>
                     <td className="text-right py-3">R$ {item.unitPrice.toFixed(2)}</td>
-                    {isReceipt && (
-                      <td className="text-right py-3 text-red-600">
-                        {itemDiscount > 0 ? `- R$ ${itemDiscount.toFixed(2)}` : '-'}
-                      </td>
-                    )}
                     <td className="text-right py-3 font-bold">R$ {calculateItemTotal(item).toFixed(2)}</td>
                   </tr>
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
 
-        {/* Totals & Payment */}
-        <div className="flex justify-between items-start border-t-2 border-black pt-6">
-          <div className="w-1/2 pr-8">
+        {/* Financial Summary */}
+        <div className="border border-black p-6 bg-gray-50">
+          <h3 className="font-bold uppercase mb-4 border-b border-gray-300 pb-2">Resumo Financeiro</h3>
+          
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span>Subtotal:</span>
+              <span>R$ {calculateSubtotal().toFixed(2)}</span>
+            </div>
+            
+            {order.generalDiscountValue > 0 && (
+              <div className="flex justify-between text-red-600">
+                <span>Desconto Geral:</span>
+                <span>
+                  {order.generalDiscountType === 'percentage' 
+                    ? `${order.generalDiscountValue}%` 
+                    : `R$ ${order.generalDiscountValue.toFixed(2)}`}
+                </span>
+              </div>
+            )}
+            
+            <div className="flex justify-between font-black text-xl border-t border-gray-300 pt-2 mt-2">
+              <span>TOTAL:</span>
+              <span>R$ {total.toFixed(2)}</span>
+            </div>
+            
+            <div className="flex justify-between mt-4 text-gray-600 font-bold text-lg bg-green-100 p-2 border border-green-300">
+              <span>Valor Recebido:</span>
+              <span>R$ {order.amountPaid.toFixed(2)}</span>
+            </div>
+            
+            <div className="flex justify-between font-bold border-t border-gray-300 pt-2 mt-2">
+              <span>Falta Pagar:</span>
+              <span className={remaining > 0 ? 'text-red-600' : 'text-green-600'}>
+                R$ {remaining.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-gray-300">
+            <p className="text-xs font-bold uppercase text-gray-500 mb-1">Forma de Pagamento</p>
+            <p className="font-bold uppercase text-lg">{order.paymentMethod}</p>
+            <p className="text-xs font-bold uppercase text-gray-500 mt-2 mb-1">Status Pagamento</p>
+            <p className="font-bold uppercase text-lg">{order.paymentStatus}</p>
+          </div>
+        </div>
+
+        {!isReceipt && (
+          <div className="mt-6 border border-black p-4">
+            <h3 className="font-bold uppercase mb-2 text-sm">Status do Pedido</h3>
+            <p className="font-black text-lg uppercase">{order.status}</p>
+          </div>
+        )}
+
+        {!isReceipt && totalDiscount > 0 && (
+          <div className="mt-6 border-2 border-green-600 bg-green-50 p-4 text-center">
+            <p className="text-sm font-bold uppercase text-green-800 mb-1">VOCÊ ECONOMIZOU NESTE PEDIDO:</p>
+            <p className="font-black text-2xl text-green-700">R$ {totalDiscount.toFixed(2)}</p>
+          </div>
+        )}
+
+        {!isReceipt && (
+          <div className="mt-6">
             <h3 className="font-bold uppercase mb-2">Observações Gerais</h3>
             <p className="text-sm whitespace-pre-wrap border border-gray-300 p-3 min-h-[100px]">
               {order.generalObservations || 'Nenhuma observação.'}
             </p>
-            
-            <div className="mt-6 border border-black p-4">
-              <h3 className="font-bold uppercase mb-2 text-sm">Status do Pedido</h3>
-              <p className="font-black text-lg uppercase">{order.status}</p>
-            </div>
-
-            {totalDiscount > 0 && (
-              <div className="mt-6 border-2 border-green-600 bg-green-50 p-4 text-center">
-                <p className="text-sm font-bold uppercase text-green-800 mb-1">VOCÊ ECONOMIZOU NESTE PEDIDO:</p>
-                <p className="font-black text-2xl text-green-700">R$ {totalDiscount.toFixed(2)}</p>
-              </div>
-            )}
           </div>
-          
-          <div className="w-1/2 border border-black p-4 bg-gray-50">
-            <h3 className="font-bold uppercase mb-4 border-b border-gray-300 pb-2">Resumo Financeiro</h3>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>R$ {calculateSubtotal().toFixed(2)}</span>
-              </div>
-              
-              {order.generalDiscountValue > 0 && (
-                <div className="flex justify-between text-red-600">
-                  <span>Desconto Geral:</span>
-                  <span>
-                    {order.generalDiscountType === 'percentage' 
-                      ? `${order.generalDiscountValue}%` 
-                      : `R$ ${order.generalDiscountValue.toFixed(2)}`}
-                  </span>
-                </div>
-              )}
-              
-              <div className="flex justify-between font-black text-xl border-t border-gray-300 pt-2 mt-2">
-                <span>TOTAL:</span>
-                <span>R$ {total.toFixed(2)}</span>
-              </div>
-              
-              <div className="flex justify-between mt-4 text-gray-600 font-bold text-lg bg-green-100 p-2 border border-green-300">
-                <span>Valor Recebido:</span>
-                <span>R$ {order.amountPaid.toFixed(2)}</span>
-              </div>
-              
-              <div className="flex justify-between font-bold border-t border-gray-300 pt-2 mt-2">
-                <span>Falta Pagar:</span>
-                <span className={remaining > 0 ? 'text-red-600' : 'text-green-600'}>
-                  R$ {remaining.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-300">
-              <p className="text-xs font-bold uppercase text-gray-500 mb-1">Forma de Pagamento</p>
-              <p className="font-bold uppercase text-lg">{order.paymentMethod}</p>
-              <p className="text-xs font-bold uppercase text-gray-500 mt-2 mb-1">Status Pagamento</p>
-              <p className="font-bold uppercase text-lg">{order.paymentStatus}</p>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Footer */}
         <div className="mt-12 text-center text-xs text-gray-500 border-t border-gray-300 pt-4">

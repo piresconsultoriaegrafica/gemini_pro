@@ -35,11 +35,23 @@ export function ReportsView() {
     });
   }, [orders, startDate, endDate, statusFilter, paymentMethodFilter]);
 
+  // Faturamento Total (Líquido - o que foi efetivamente vendido)
   const totalRevenue = filteredOrders.reduce((sum, order) => sum + calculateOrderTotal(order), 0);
+  
+  // Faturamento Bruto (sem descontos)
+  const totalGrossRevenue = filteredOrders.reduce((sum, order) => {
+    return sum + (order.items || []).reduce((itemSum, item) => itemSum + calculateItemTotal(item), 0);
+  }, 0);
+
   const totalCost = filteredOrders.reduce((sum, order) => {
     return sum + (order.items || []).reduce((itemSum, item) => itemSum + calculateItemCost(item), 0);
   }, 0);
-  const totalProfit = totalRevenue - totalCost;
+  
+  // Total de descontos
+  const totalDiscount = totalGrossRevenue - totalRevenue;
+
+  // Lucro = Valor de Venda (Bruto) - Valor de Custo - Desconto
+  const totalProfit = totalGrossRevenue - totalCost - totalDiscount;
   const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   const totalPaid = filteredOrders.reduce((sum, order) => sum + (order.amountPaid || 0), 0);
@@ -286,12 +298,19 @@ export function ReportsView() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
             <IconContainer><DollarSign size={24} /></IconContainer>
             <div>
               <p className="text-sm text-slate-500 font-medium">Faturamento Total</p>
               <h3 className="text-2xl font-bold text-slate-800">R$ {totalRevenue.toFixed(2)}</h3>
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+            <IconContainer><DollarSign size={24} /></IconContainer>
+            <div>
+              <p className="text-sm text-slate-500 font-medium">Total Descontos</p>
+              <h3 className="text-2xl font-bold text-rose-600">R$ {totalDiscount.toFixed(2)}</h3>
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">

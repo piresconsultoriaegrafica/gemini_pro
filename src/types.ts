@@ -33,6 +33,8 @@ export interface ProductVariation {
   id: string;
   name: string;
   price: number;
+  costPrice: number;
+  markup: number;
   barcode?: string;
 }
 
