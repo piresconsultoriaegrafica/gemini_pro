@@ -52,6 +52,10 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
+      watch: {
+        usePolling: true,
+        ignored: ['**/database.sqlite', '**/database.sqlite-shm', '**/database.sqlite-wal'],
+      },
     },
   };
 });
