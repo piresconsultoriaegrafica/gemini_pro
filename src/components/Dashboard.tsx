@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../store';
 import { Order } from '../types';
+import { IconContainer } from './IconContainer';
 import { Plus, List, LayoutGrid, Search, Filter, UserPlus, Edit2, Calendar, Clock, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -168,7 +169,7 @@ export function Dashboard() {
             onClick={() => setIsProductModalOpen(true)}
             className="btn-3d btn-3d-secondary px-4 py-2 text-sm flex items-center gap-2"
           >
-            <Plus size={18} />
+            <div className="p-1 rounded-lg bg-white shadow-sm border border-slate-100 text-indigo-500"><Plus size={16} /></div>
             <span className="hidden lg:inline">Produto</span>
             <kbd className="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono text-slate-500 ml-1 shadow-sm">F3</kbd>
           </button>
@@ -177,7 +178,7 @@ export function Dashboard() {
             onClick={() => setIsCustomerModalOpen(true)}
             className="btn-3d btn-3d-secondary px-4 py-2 text-sm flex items-center gap-2"
           >
-            <UserPlus size={18} />
+            <div className="p-1 rounded-lg bg-white shadow-sm border border-slate-100 text-indigo-500"><UserPlus size={16} /></div>
             <span className="hidden lg:inline">Cliente</span>
             <kbd className="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono text-slate-500 ml-1 shadow-sm">F2</kbd>
           </button>
@@ -186,7 +187,7 @@ export function Dashboard() {
             onClick={() => setIsNewOrderModalOpen(true)}
             className="btn-3d btn-3d-primary px-4 py-2 text-sm flex items-center gap-2"
           >
-            <Plus size={18} />
+            <div className="p-1 rounded-lg bg-white shadow-sm border border-slate-100 text-indigo-500"><Plus size={16} /></div>
             <span className="hidden lg:inline">Novo Pedido</span>
             <kbd className="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 bg-indigo-500 border border-indigo-400 rounded text-[10px] font-mono text-white ml-1 shadow-sm">F1</kbd>
           </button>

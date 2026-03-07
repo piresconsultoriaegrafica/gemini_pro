@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useAppContext } from '../store';
+import { IconContainer } from './IconContainer';
 import { Printer, Download, FileText, Filter, Calendar, DollarSign, Package, CreditCard, BarChart2, List } from 'lucide-react';
 import { exportToExcel, exportToPDF } from '../utils/exportUtils';
 import { calculateOrderTotal, calculateItemTotal, calculateOrderProfit, calculateItemCost } from '../utils';
@@ -195,14 +196,14 @@ export function ReportsView() {
               className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}`}
               title="Visualização em Lista"
             >
-              <List size={18} />
+              <IconContainer size="sm" active={viewMode === 'list'}><List size={16} /></IconContainer>
             </button>
             <button 
               onClick={() => setViewMode('chart')}
               className={`p-1.5 rounded-md transition-colors ${viewMode === 'chart' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}`}
               title="Visualização em Gráficos"
             >
-              <BarChart2 size={18} />
+              <IconContainer size="sm" active={viewMode === 'chart'}><BarChart2 size={16} /></IconContainer>
             </button>
           </div>
           <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
@@ -211,7 +212,7 @@ export function ReportsView() {
               className="p-1.5 rounded-md transition-colors text-slate-500 hover:text-slate-700 hover:bg-white shadow-sm"
               title="Imprimir Relatório"
             >
-              <Printer size={18} />
+              <IconContainer size="sm"><Printer size={16} /></IconContainer>
             </button>
             <div className="w-px h-4 bg-slate-300 mx-1"></div>
             <button 
@@ -219,14 +220,14 @@ export function ReportsView() {
               className="p-1.5 rounded-md transition-colors text-slate-500 hover:text-slate-700 hover:bg-white shadow-sm"
               title="Exportar PDF"
             >
-              <FileText size={18} />
+              <IconContainer size="sm"><FileText size={16} /></IconContainer>
             </button>
             <button 
               onClick={handleExportExcel}
               className="p-1.5 rounded-md transition-colors text-slate-500 hover:text-slate-700 hover:bg-white shadow-sm"
               title="Exportar Planilha"
             >
-              <Download size={18} />
+              <IconContainer size="sm"><Download size={16} /></IconContainer>
             </button>
           </div>
         </div>
@@ -287,18 +288,14 @@ export function ReportsView() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-              <DollarSign size={24} />
-            </div>
+            <IconContainer><DollarSign size={24} /></IconContainer>
             <div>
               <p className="text-sm text-slate-500 font-medium">Faturamento Total</p>
               <h3 className="text-2xl font-bold text-slate-800">R$ {totalRevenue.toFixed(2)}</h3>
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-              <BarChart2 size={24} />
-            </div>
+            <IconContainer><BarChart2 size={24} /></IconContainer>
             <div>
               <p className="text-sm text-slate-500 font-medium">Lucro Total</p>
               <h3 className="text-2xl font-bold text-emerald-700">R$ {totalProfit.toFixed(2)}</h3>
@@ -306,18 +303,14 @@ export function ReportsView() {
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-              <CreditCard size={24} />
-            </div>
+            <IconContainer><CreditCard size={24} /></IconContainer>
             <div>
               <p className="text-sm text-slate-500 font-medium">Valor Recebido</p>
               <h3 className="text-2xl font-bold text-slate-800">R$ {totalPaid.toFixed(2)}</h3>
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-              <Calendar size={24} />
-            </div>
+            <IconContainer><Calendar size={24} /></IconContainer>
             <div>
               <p className="text-sm text-slate-500 font-medium">Valor Pendente</p>
               <h3 className="text-2xl font-bold text-slate-800">R$ {totalPending.toFixed(2)}</h3>
@@ -567,7 +560,7 @@ export function ReportsView() {
 
         {/* Hidden printable content */}
         <div className="hidden">
-          <div ref={printRef} className="p-8 bg-white text-black" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <div ref={printRef} className="p-8 bg-white text-black print:p-0" style={{ fontFamily: 'Arial, sans-serif' }}>
             {companyInfo && (
               <div className="flex items-center justify-between mb-6 border-b border-gray-300 pb-4">
                 <div className="flex items-center gap-6">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { IconContainer } from './IconContainer';
 import { X, Plus, Trash2, Save, Minus, Square, Maximize2, Search } from 'lucide-react';
 import { useAppContext } from '../store';
 import { Product, ProductVariation } from '../types';
@@ -215,7 +216,7 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
         <div className="px-5 py-4 border-b border-slate-200/60 bg-slate-50/50 backdrop-blur-sm flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-100 p-1.5 rounded-lg text-indigo-600">
-              <Maximize2 size={16} />
+              <IconContainer size="sm"><Maximize2 size={14} /></IconContainer>
             </div>
             <h2 className="text-lg font-bold text-slate-800">
               {productToEdit ? 'Editar Produto/Serviço' : 'Cadastrar Produto/Serviço'}
@@ -223,13 +224,13 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
           </div>
           <div className="flex items-center gap-1">
             <button onClick={() => setIsMinimized(true)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" title="Minimizar">
-              <Minus size={16} />
+              <IconContainer size="sm"><Minus size={14} /></IconContainer>
             </button>
             <button onClick={() => setIsMaximized(!isMaximized)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" title={isMaximized ? "Restaurar" : "Maximizar"}>
-              {isMaximized ? <Maximize2 size={16} /> : <Square size={16} />}
+              <IconContainer size="sm">{isMaximized ? <Maximize2 size={14} /> : <Square size={14} />}</IconContainer>
             </button>
             <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Fechar">
-              <X size={16} />
+              <IconContainer size="sm"><X size={14} /></IconContainer>
             </button>
           </div>
         </div>
@@ -416,7 +417,7 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
                               onClick={() => handleRemoveCompositionItem(item.productId)}
                               className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors mt-4"
                             >
-                              <Trash2 size={16} />
+                              <IconContainer size="sm"><Trash2 size={12} /></IconContainer>
                             </button>
                           </div>
                         );
@@ -461,7 +462,7 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
                   onClick={handleAddVariation}
                   className="btn-3d btn-3d-secondary px-3 py-1.5 text-xs flex items-center gap-1"
                 >
-                  <Plus size={14} />
+                  <IconContainer size="sm"><Plus size={12} /></IconContainer>
                   Adicionar Variação
                 </button>
               </div>
@@ -513,7 +514,7 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
                           className="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg transition-colors mt-4"
                           title="Remover variação"
                         >
-                          <Trash2 size={16} />
+                          <IconContainer size="sm"><Trash2 size={12} /></IconContainer>
                         </button>
                       </div>
                     </div>
@@ -542,7 +543,7 @@ export function ProductModal({ onClose, onProductAdded, productToEdit }: Product
             form="product-form"
             className="btn-3d btn-3d-primary px-6 py-2 text-sm flex items-center gap-2"
           >
-            <Save size={18} />
+            <IconContainer size="sm"><Save size={14} /></IconContainer>
             Salvar Produto
           </button>
         </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, X, Power } from 'lucide-react';
+import { Icon3D } from './Icon3D';
 
 interface LogoutConfirmModalProps {
   onClose: () => void;
@@ -13,7 +13,7 @@ export function LogoutConfirmModal({ onClose, onLogoutToLogin, onCloseSystem }: 
       <div className="card-3d bg-white w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50">
         <div className="p-6 text-center">
           <div className="h-16 w-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-            <LogOut className="h-8 w-8 text-rose-600" />
+            <Icon3D name="sign-out" size={32} />
           </div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">Deseja sair do sistema?</h2>
           <p className="text-slate-500 mb-6 text-sm">
@@ -26,7 +26,7 @@ export function LogoutConfirmModal({ onClose, onLogoutToLogin, onCloseSystem }: 
               className="w-full flex items-center justify-center p-4 rounded-xl bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200 text-indigo-700 transition-all group shadow-sm hover:shadow-md"
             >
               <div className="bg-indigo-200 p-2 rounded-lg mr-4 group-hover:bg-indigo-300 transition-colors">
-                <LogOut className="h-5 w-5 text-indigo-700" />
+                <Icon3D name="sign-out" size={20} />
               </div>
               <div className="text-left flex-1">
                 <div className="font-bold text-indigo-800">Trocar de Usuário</div>
@@ -39,7 +39,7 @@ export function LogoutConfirmModal({ onClose, onLogoutToLogin, onCloseSystem }: 
               className="w-full flex items-center justify-center p-4 rounded-xl bg-rose-50 border border-rose-100 hover:bg-rose-100 hover:border-rose-200 text-rose-700 transition-all group shadow-sm hover:shadow-md"
             >
               <div className="bg-rose-200 p-2 rounded-lg mr-4 group-hover:bg-rose-300 transition-colors">
-                <Power className="h-5 w-5 text-rose-700" />
+                <Icon3D name="power-off" size={20} />
               </div>
               <div className="text-left flex-1">
                 <div className="font-bold text-rose-800">Fechar Sistema</div>
@@ -54,7 +54,7 @@ export function LogoutConfirmModal({ onClose, onLogoutToLogin, onCloseSystem }: 
             onClick={onClose}
             className="text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors"
           >
-            <X className="mr-2 h-4 w-4" />
+            <Icon3D name="close" size={16} className="mr-2" />
             Cancelar
           </button>
         </div>

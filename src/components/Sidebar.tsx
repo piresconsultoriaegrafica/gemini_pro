@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppContext } from '../store';
+import { IconContainer } from './IconContainer';
 import { LayoutDashboard, Archive, Settings, Printer, Trash2, CheckCircle, Users, Package, BarChart2, ChevronLeft, ChevronRight, ChevronDown, LogOut, Calendar, User, ClipboardList } from 'lucide-react';
 import { Employee } from '../types';
 
@@ -61,9 +62,9 @@ export function Sidebar({ currentView, setCurrentView, openSettings, onLogout, c
       }`}
     >
       <div className={`flex items-center ${collapsed ? 'justify-center w-full' : 'gap-3'} z-10`}>
-        <div className={`p-1.5 rounded-lg transition-all duration-300 ${active ? 'bg-white/20 shadow-inner' : 'bg-slate-100 group-hover:bg-indigo-50'}`}>
-          <Icon size={18} className={active ? 'text-white' : 'text-slate-500 group-hover:text-indigo-600'} />
-        </div>
+        <IconContainer active={active}>
+          <Icon size={20} className="group-hover:text-indigo-600" />
+        </IconContainer>
         {!collapsed && <span>{label}</span>}
       </div>
       {!collapsed && hasSubmenu && (
@@ -96,9 +97,9 @@ export function Sidebar({ currentView, setCurrentView, openSettings, onLogout, c
       onClick={onClick}
       className={`w-full text-left ${collapsed ? 'px-4 py-2 hover:bg-slate-50' : 'px-3 py-2 rounded-lg hover:bg-slate-50'} text-sm flex items-center gap-3 transition-all duration-200 ${active ? `${colorClass} font-medium ${bgClass} shadow-sm` : 'text-slate-600'}`}
     >
-      {collapsed ? <Icon size={16} /> : (
-        <div className={`w-2 h-2 rounded-full shadow-sm ${active ? colorClass.replace('text-', 'bg-') : 'bg-slate-300'}`} />
-      )}
+      <div className={`p-1 rounded-lg ${active ? 'bg-white shadow-sm' : 'bg-slate-100'}`}>
+        <Icon size={16} className={active ? colorClass.replace('text-', 'text-') : 'text-slate-500'} />
+      </div>
       <span>{label}</span>
     </button>
   );

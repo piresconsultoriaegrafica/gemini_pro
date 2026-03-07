@@ -15,7 +15,7 @@ export const PrintableProducts = React.forwardRef<HTMLDivElement, PrintableProdu
     const titleClass = is50mm ? 'text-sm' : 'text-base';
     
     return (
-      <div ref={ref} className={`font-mono text-black bg-white mx-auto p-2 ${containerClass} leading-tight`}>
+      <div ref={ref} className={`font-mono text-black bg-white mx-auto p-2 ${containerClass} leading-tight print:p-0`}>
         <div className="text-center mb-3 border-b border-black pb-2 border-dashed">
           {companyInfo && (
             <>
@@ -61,7 +61,7 @@ export const PrintableProducts = React.forwardRef<HTMLDivElement, PrintableProdu
   }
 
   return (
-    <div ref={ref} className="p-8 bg-white text-black" style={{ fontFamily: 'Arial, sans-serif' }}>
+    <div ref={ref} className="p-8 bg-white text-black print:p-0" style={{ fontFamily: 'Arial, sans-serif' }}>
       {companyInfo && (
         <div className="flex items-center justify-between mb-6 border-b border-gray-300 pb-4">
           <div className="flex items-center gap-6">

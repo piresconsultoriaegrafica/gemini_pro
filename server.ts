@@ -163,21 +163,43 @@ async function startServer() {
 
   // Import database file
   app.post("/api/import", upload.single('database'), (req, res) => {
+    console.log("Import request received");
     try {
       if (!req.file) {
+        console.log("No file uploaded");
         return res.status(400).json({ error: "No file uploaded" });
       }
+      console.log("File uploaded:", req.file.path);
 
       // Close current connection
-      db.close();
+      if (db) {
+        db.close();
+        console.log("Database closed");
+      } else {
+        console.log("Database was not open");
+      }
 
       // Replace file
+      console.log("Replacing file:", req.file.path, "with", dbPath);
       fs.copyFileSync(req.file.path, dbPath);
       fs.unlinkSync(req.file.path); // Clean up uploaded file
+      console.log("File replaced");
+      
+      // Remove WAL/SHM files
+      if (fs.existsSync(dbPath + '-shm')) {
+        fs.unlinkSync(dbPath + '-shm');
+        console.log("Removed -shm");
+      }
+      if (fs.existsSync(dbPath + '-wal')) {
+        fs.unlinkSync(dbPath + '-wal');
+        console.log("Removed -wal");
+      }
 
       // Re-open connection
       initDb();
+      console.log("Database re-opened");
 
+      console.log("Database imported successfully");
       res.json({ success: true });
     } catch (error) {
       console.error("Error importing database:", error);

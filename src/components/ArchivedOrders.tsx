@@ -55,13 +55,13 @@ export function ArchivedOrders() {
             placeholder="Buscar pedido, cliente, telefone..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-3d pl-10 pr-4 py-2.5 w-72 text-sm transition-all"
+            className="border border-slate-300 rounded-lg px-3 py-2.5 w-72 text-sm transition-all"
           />
         </div>
       </header>
 
       <div className="flex-1 overflow-auto p-8">
-        <div className="card-3d overflow-hidden bg-white shadow-sm border border-slate-200/60">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-xs">
               <tr>
@@ -93,7 +93,7 @@ export function ArchivedOrders() {
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => setOrderToUnarchive(order)}
-                        className="btn-3d btn-3d-secondary px-3 py-1.5 text-xs flex items-center gap-1.5"
+                        className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 px-3 py-1.5 text-xs flex items-center gap-1.5 rounded-lg transition-colors"
                         title="Reabrir Pedido"
                       >
                         <ArchiveRestore size={14} />
@@ -101,7 +101,7 @@ export function ArchivedOrders() {
                       </button>
                       <button 
                         onClick={() => setOrderToDelete(order)}
-                        className="btn-3d btn-3d-danger px-3 py-1.5 text-xs flex items-center gap-1.5"
+                        className="bg-rose-600 text-white hover:bg-rose-700 px-3 py-1.5 text-xs flex items-center gap-1.5 rounded-lg transition-colors"
                         title="Mover para Excluídos"
                       >
                         <Trash2 size={14} />
@@ -152,7 +152,7 @@ export function ArchivedOrders() {
               </button>
               <button
                 onClick={handleUnarchiveConfirm}
-                className="btn-3d btn-3d-primary px-5 py-2 text-sm"
+                className="bg-indigo-600 text-white hover:bg-indigo-700 px-5 py-2 text-sm rounded-lg transition-colors"
               >
                 Sim, Reabrir
               </button>
@@ -184,7 +184,7 @@ export function ArchivedOrders() {
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="btn-3d btn-3d-danger px-5 py-2 text-sm"
+                className="bg-rose-600 text-white hover:bg-rose-700 px-5 py-2 text-sm rounded-lg transition-colors"
               >
                 Sim, Excluir
               </button>

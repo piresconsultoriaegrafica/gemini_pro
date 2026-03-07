@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useAppContext } from '../store';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart2, CreditCard } from 'lucide-react';
 
 export function DashboardCharts() {
   const { orders, productionStatuses } = useAppContext();
@@ -38,7 +39,7 @@ export function DashboardCharts() {
       <div className="card-3d p-6 relative overflow-hidden group hover:shadow-lg transition-shadow duration-300">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-80"></div>
         <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-6 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></span>
+          <div className="p-1 rounded-lg bg-indigo-100 text-indigo-600 shadow-sm border border-indigo-200"><BarChart2 size={14} /></div>
           Pedidos por Status
         </h3>
         <div className="h-72">
@@ -90,7 +91,7 @@ export function DashboardCharts() {
       <div className="card-3d p-6 relative overflow-hidden group hover:shadow-lg transition-shadow duration-300">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-80"></div>
         <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-6 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+          <div className="p-1 rounded-lg bg-emerald-100 text-emerald-600 shadow-sm border border-emerald-200"><CreditCard size={14} /></div>
           Status de Pagamento
         </h3>
         <div className="h-72">

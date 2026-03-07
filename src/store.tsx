@@ -135,12 +135,36 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const exportDatabaseFile = async () => {
     const blob = await exportDatabase();
     if (!blob) return;
+
+    const now = new Date();
+    const dateStr = `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
+    const fileName = `backup_sistema_${dateStr}.sqlite`;
+
+    // Tentar usar a API de Acesso ao Sistema de Arquivos (File System Access API)
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: fileName,
+          types: [{
+            description: 'Banco de Dados SQLite',
+            accept: { 'application/x-sqlite3': ['.sqlite', '.db'] },
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (err) {
+        // Se o usuário cancelar ou ocorrer erro, prosseguir com o download padrão
+        console.warn("File System Access API não utilizada ou cancelada, usando fallback:", err);
+      }
+    }
+
+    // Fallback: Download tradicional
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const now = new Date();
-    const dateStr = `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
-    a.download = `backup_sistema_${dateStr}.sqlite`;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -148,14 +172,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const importDatabaseFile = async (file: File) => {
+    console.log("Importing database file:", file.name);
     try {
       await importDatabase(file);
+      console.log("Database imported successfully");
       const newState = await getAppState();
       if (newState) {
         importState(newState);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error in importDatabaseFile:", err);
       throw err;
     }
   };

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAppContext } from '../store';
+import { IconContainer } from './IconContainer';
 import { X, Save, Plus, Trash2, Edit2, Check, Download, Upload, AlertCircle, Minus, Square, Maximize2, Settings } from 'lucide-react';
 import { CustomOption } from '../types';
 import { v4 as uuidv4 } from 'uuid';
@@ -53,6 +54,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
 
   const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log("File selected:", file);
     if (!file) return;
 
     // Check extension
@@ -95,7 +97,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             onClick={handleAdd}
             className="p-1.5 bg-indigo-100 text-indigo-600 hover:bg-indigo-200 rounded-md transition-colors flex items-center gap-1 text-xs font-medium"
           >
-            <Plus size={14} /> Adicionar
+            <IconContainer size="sm"><Plus size={12} /></IconContainer> Adicionar
           </button>
         </div>
         
@@ -122,7 +124,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-md transition-colors"
                 title="Remover"
               >
-                <Trash2 size={16} />
+                <IconContainer size="sm"><Trash2 size={12} /></IconContainer>
               </button>
             </div>
           ))}
@@ -168,7 +170,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         <div className="px-5 py-4 border-b border-slate-200/60 bg-slate-50/50 backdrop-blur-sm flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-slate-100 p-1.5 rounded-lg text-slate-600">
-              <Settings size={16} />
+              <IconContainer size="sm"><Settings size={14} /></IconContainer>
             </div>
             <h2 className="text-lg font-bold text-slate-800">
               Configurações do Sistema
@@ -589,7 +591,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 onClick={handleExportBackup}
                 className="btn-3d btn-3d-secondary px-4 py-2 text-sm flex items-center gap-2"
               >
-                <Download size={16} />
+                <IconContainer size="sm"><Download size={14} /></IconContainer>
                 Exportar Banco de Dados (.sqlite)
               </button>
               
@@ -599,13 +601,14 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                   accept=".sqlite,.db"
                   onChange={handleImportBackup}
                   ref={fileInputRef}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  className="hidden"
                   title="Restaurar Banco de Dados"
                 />
                 <button 
+                  onClick={() => fileInputRef.current?.click()}
                   className="btn-3d btn-3d-primary px-4 py-2 text-sm flex items-center gap-2"
                 >
-                  <Upload size={16} />
+                  <IconContainer size="sm"><Upload size={14} /></IconContainer>
                   Importar Banco de Dados (.sqlite)
                 </button>
               </div>
@@ -626,7 +629,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             onClick={handleSave}
             className="btn-3d btn-3d-primary px-6 py-2 text-sm flex items-center gap-2"
           >
-            <Save size={18} />
+            <IconContainer size="sm"><Save size={14} /></IconContainer>
             Salvar Configurações
           </button>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../store';
+import { IconContainer } from './IconContainer';
 import { Search, FileText, Trash2, Edit2, AlertCircle, Calendar, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { OrderModal } from './OrderModal';
@@ -104,7 +105,7 @@ export function QuotationsView() {
                           className="btn-3d btn-3d-secondary px-3 py-1.5 text-xs flex items-center gap-2"
                           title="Editar Cotação"
                         >
-                          <Edit2 size={14} />
+                          <div className="p-1 rounded-lg bg-white shadow-sm border border-slate-100 text-indigo-500"><Edit2 size={14} /></div>
                           Abrir
                         </button>
                         <button 
@@ -112,7 +113,7 @@ export function QuotationsView() {
                           className="btn-3d btn-3d-danger px-3 py-1.5 text-xs flex items-center gap-2"
                           title="Excluir Cotação"
                         >
-                          <Trash2 size={14} />
+                          <div className="p-1 rounded-lg bg-white shadow-sm border border-slate-100 text-rose-500"><Trash2 size={14} /></div>
                           Excluir
                         </button>
                       </div>

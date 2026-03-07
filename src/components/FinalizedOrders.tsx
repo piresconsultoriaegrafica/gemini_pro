@@ -50,13 +50,13 @@ export function FinalizedOrders() {
             placeholder="Buscar pedido, cliente, telefone..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-3d pl-10 pr-4 py-2.5 w-72 text-sm transition-all focus:ring-emerald-200 focus:border-emerald-400"
+            className="border border-slate-300 rounded-lg px-3 py-2.5 w-72 text-sm transition-all focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
           />
         </div>
       </header>
 
       <div className="flex-1 overflow-auto p-8">
-        <div className="card-3d overflow-hidden bg-white shadow-sm border border-slate-200/60">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-xs">
               <tr>
@@ -91,7 +91,7 @@ export function FinalizedOrders() {
                   <td className="px-6 py-4 text-right">
                     <button 
                       onClick={() => handleViewOrder(order)}
-                      className="btn-3d btn-3d-secondary px-3 py-1.5 text-xs flex items-center gap-1.5 ml-auto"
+                      className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 px-3 py-1.5 text-xs flex items-center gap-1.5 ml-auto rounded-lg transition-colors"
                       title="Visualizar Pedido"
                     >
                       <Eye size={16} />

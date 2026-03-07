@@ -22,68 +22,101 @@ export function CalendarView() {
   const [overdueViewMode, setOverdueViewMode] = useState<'list' | 'chart'>('list');
   const calendarRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = () => {
-    window.print();
+  const generateCalendarPDF = async () => {
+    if (!calendarRef.current) return null;
+    
+    // Show loading state if needed
+    const originalOverflow = calendarRef.current.style.overflow;
+    const originalHeight = calendarRef.current.style.height;
+    
+    // Toggle headers for PDF generation
+    const printHeader = document.getElementById('calendar-print-header');
+    const screenHeader = document.getElementById('calendar-screen-header');
+    
+    if (printHeader) printHeader.classList.remove('hidden');
+    if (screenHeader) screenHeader.classList.add('hidden');
+    
+    // Expand to capture full content
+    calendarRef.current.style.overflow = 'visible';
+    calendarRef.current.style.height = 'auto';
+    
+    const dataUrl = await toPng(calendarRef.current, {
+      quality: 0.95,
+      backgroundColor: '#ffffff',
+      width: calendarRef.current.scrollWidth,
+      height: calendarRef.current.scrollHeight,
+      style: {
+        overflow: 'visible',
+        height: 'auto'
+      }
+    });
+    
+    // Restore styles and headers
+    calendarRef.current.style.overflow = originalOverflow;
+    calendarRef.current.style.height = originalHeight;
+    
+    if (printHeader) printHeader.classList.add('hidden');
+    if (screenHeader) screenHeader.classList.remove('hidden');
+    
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const imgProps = pdf.getImageProperties(dataUrl);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    
+    if (pdfHeight > pdf.internal.pageSize.getHeight()) {
+      const scale = pdf.internal.pageSize.getHeight() / pdfHeight;
+      if (scale < 1) {
+            pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth * scale, pdfHeight * scale);
+      } else {
+            pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      }
+    } else {
+      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    }
+    
+    return pdf;
+  };
+
+  const handlePrint = async () => {
+    try {
+      const pdf = await generateCalendarPDF();
+      if (!pdf) return;
+      
+      pdf.autoPrint();
+      const blob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(blob);
+      const newWindow = window.open(pdfUrl, '_blank');
+      
+      if (!newWindow) {
+        alert('O bloqueador de pop-ups impediu a abertura da janela de impressão. Por favor, permita pop-ups para este site.');
+        return;
+      }
+      
+      newWindow.focus();
+      // Wait for the PDF to load in the new window before triggering print
+      newWindow.onload = () => {
+        newWindow.print();
+      };
+      
+      // Fallback: if onload doesn't trigger, try printing after a short delay
+      setTimeout(() => {
+        newWindow.print();
+      }, 1000);
+    } catch (error) {
+      console.error('Error printing PDF:', error);
+      alert('Erro ao preparar impressão. Tente usar a opção de baixar PDF.');
+    }
   };
 
   const handleExportPDF = async () => {
-    if (!calendarRef.current) return;
-    
     try {
-      // Show loading state if needed
-      const originalOverflow = calendarRef.current.style.overflow;
-      const originalHeight = calendarRef.current.style.height;
-      
-      // Toggle headers for PDF generation
-      const printHeader = document.getElementById('calendar-print-header');
-      const screenHeader = document.getElementById('calendar-screen-header');
-      
-      if (printHeader) printHeader.classList.remove('hidden');
-      if (screenHeader) screenHeader.classList.add('hidden');
-      
-      // Expand to capture full content
-      calendarRef.current.style.overflow = 'visible';
-      calendarRef.current.style.height = 'auto';
-      
-      const dataUrl = await toPng(calendarRef.current, {
-        quality: 0.95,
-        backgroundColor: '#ffffff',
-        width: calendarRef.current.scrollWidth,
-        height: calendarRef.current.scrollHeight,
-        style: {
-          overflow: 'visible',
-          height: 'auto'
-        }
-      });
-      
-      // Restore styles and headers
-      calendarRef.current.style.overflow = originalOverflow;
-      calendarRef.current.style.height = originalHeight;
-      
-      if (printHeader) printHeader.classList.add('hidden');
-      if (screenHeader) screenHeader.classList.remove('hidden');
-      
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      
-      if (pdfHeight > pdf.internal.pageSize.getHeight()) {
-        const scale = pdf.internal.pageSize.getHeight() / pdfHeight;
-        if (scale < 1) {
-             pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth * scale, pdfHeight * scale);
-        } else {
-             pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        }
-      } else {
-        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      }
-      
+      const pdf = await generateCalendarPDF();
+      if (!pdf) return;
       pdf.save(`calendario_entregas_${format(currentDate, 'MM-yyyy')}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -97,8 +130,6 @@ export function CalendarView() {
       
       // Restore styles in case of error
       if (calendarRef.current) {
-        // We can't access originalOverflow here easily unless we store it in a ref or var outside try block
-        // But for simplicity, let's reset to auto/hidden which is likely default
         calendarRef.current.style.overflow = 'auto';
         calendarRef.current.style.height = '100%';
       }

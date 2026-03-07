@@ -49,7 +49,7 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
       const subtitleClass = is50mm ? 'text-[10px]' : 'text-xs';
       
       return (
-        <div ref={ref} className={`font-mono text-black bg-white mx-auto p-2 ${containerClass} leading-tight`}>
+        <div ref={ref} className={`font-mono text-black bg-white mx-auto p-2 ${containerClass} leading-tight print:p-0`}>
           {/* Header */}
           <div className="text-center mb-3 border-b border-black pb-2 border-dashed">
             {companyInfo.logoUrl && (
@@ -175,7 +175,7 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
     }
 
     return (
-      <div ref={ref} className="p-8 font-sans text-black bg-white max-w-[800px] mx-auto">
+      <div ref={ref} className="p-8 font-sans text-black bg-white max-w-[800px] mx-auto print:max-w-none print:w-full print:p-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-black pb-6 mb-6">
           <div className="flex items-center gap-6">

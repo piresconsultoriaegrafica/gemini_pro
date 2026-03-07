@@ -47,8 +47,11 @@ export const exportDatabase = async (): Promise<Blob | null> => {
 export const importDatabase = async (file: File) => {
   const formData = new FormData();
   formData.append('database', file);
-  await fetch('/api/import', {
+  const res = await fetch('/api/import', {
     method: 'POST',
     body: formData
   });
+  if (!res.ok) {
+    throw new Error('Failed to import database');
+  }
 };
