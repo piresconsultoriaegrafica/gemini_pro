@@ -12,6 +12,7 @@ import { ProductsView } from './components/ProductsView';
 import { ReportsView } from './components/ReportsView';
 import { EmployeesView } from './components/EmployeesView';
 import { CalendarView } from './components/CalendarView';
+import { PDVView } from './components/PDVView';
 import { FaviconUpdater } from './components/FaviconUpdater';
 import { LoginScreen } from './components/LoginScreen';
 import { LogoutConfirmModal } from './components/LogoutConfirmModal';
@@ -173,7 +174,7 @@ function AppContent() {
         </div>
         
         <main className="flex-1 overflow-auto print:block print:h-auto print:overflow-visible print:p-0">
-          {currentView === 'dashboard' && <Dashboard />}
+          {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} />}
           {currentView === 'archived' && <ArchivedOrders />}
           {currentView === 'deleted' && <DeletedOrders />}
           {currentView === 'finalized' && <FinalizedOrders />}
@@ -183,6 +184,7 @@ function AppContent() {
           {currentView === 'reports' && <ReportsView />}
           {currentView === 'calendar' && <CalendarView />}
           {currentView === 'employees' && <EmployeesView />}
+          {currentView === 'pdv' && <PDVView />}
         </main>
 
         {isSettingsOpen && (

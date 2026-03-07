@@ -1,13 +1,22 @@
 import { AppState } from '../types';
 
 export const initDB = async (): Promise<void> => {
-  // Check connection
-  try {
-    const res = await fetch('/api/state');
-    if (!res.ok) throw new Error('API not available');
-  } catch (e) {
-    console.error("Failed to connect to API", e);
+  // Check connection with retries
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const res = await fetch('/api/health');
+      if (res.ok) {
+        console.log("Connected to API successfully");
+        return;
+      }
+    } catch (e) {
+      console.warn(`Connection attempt failed, ${retries} retries left...`);
+    }
+    retries--;
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
+  console.error("Failed to connect to API after multiple attempts");
 };
 
 export const getAppState = async (): Promise<AppState | null> => {

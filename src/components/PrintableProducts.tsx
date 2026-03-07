@@ -64,12 +64,12 @@ export const PrintableProducts = React.forwardRef<HTMLDivElement, PrintableProdu
   }
 
   return (
-    <div ref={ref} className="p-8 font-sans text-slate-800 bg-white print:p-4">
+    <div ref={ref} className="p-4 font-sans text-slate-800 bg-white print:p-2">
       {companyInfo && (
-        <div className="flex items-center justify-between mb-6 border-b border-indigo-100 pb-6">
-          <div className="flex items-center gap-6">
+        <div className="flex items-center justify-between mb-3 border-b border-indigo-100 pb-3 print:break-inside-avoid">
+          <div className="flex items-center gap-3">
             {companyInfo.logoUrl && (
-              <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-2xl p-2 border border-indigo-100 shadow-sm">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-xl p-1 border border-indigo-100 shadow-sm">
                 <img 
                   src={companyInfo.logoUrl} 
                   alt="Logo" 
@@ -79,14 +79,14 @@ export const PrintableProducts = React.forwardRef<HTMLDivElement, PrintableProdu
               </div>
             )}
             <div>
-              <h2 className="text-xl font-bold uppercase text-indigo-900">{companyInfo.name}</h2>
-              <p className="text-xs text-slate-600">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
-              <p className="text-xs text-slate-600">{companyInfo.address}</p>
+              <h2 className="text-sm font-bold uppercase text-indigo-900">{companyInfo.name}</h2>
+              <p className="text-[8px] text-slate-600 leading-tight">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
+              <p className="text-[8px] text-slate-600 leading-tight">{companyInfo.address}</p>
               {companyInfo.branches && companyInfo.branches.length > 0 && (
-                <div className="mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Filiais:</p>
+                <div className="mt-1 bg-slate-50 p-1 rounded-md border border-slate-100">
+                  <p className="text-[7px] font-bold text-slate-500 uppercase">Filiais:</p>
                   {companyInfo.branches.map(b => (
-                    <p key={b.id} className="text-[10px] text-slate-600">{b.name}: {b.address}</p>
+                    <p key={b.id} className="text-[7px] text-slate-600 leading-tight">{b.name}: {b.address}</p>
                   ))}
                 </div>
               )}
@@ -94,35 +94,35 @@ export const PrintableProducts = React.forwardRef<HTMLDivElement, PrintableProdu
           </div>
         </div>
       )}
-      <h1 className="text-xl font-bold uppercase text-center mb-6 tracking-widest text-indigo-900 bg-indigo-50 py-3 rounded-2xl">LISTA DE PRODUTOS E SERVIÇOS</h1>
+      <h1 className="text-sm font-bold uppercase text-center mb-3 tracking-widest text-indigo-900 bg-indigo-50 py-1.5 rounded-xl print:break-inside-avoid">LISTA DE PRODUTOS E SERVIÇOS</h1>
       <table className="w-full border-collapse">
         <thead>
           <tr className="bg-indigo-50 text-indigo-900">
-            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tl-2xl">Código</th>
-            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider">Nome</th>
-            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider">Valor Base</th>
-            <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tr-2xl">Variações</th>
+            <th className="border-b border-indigo-100 p-1.5 text-left text-[8px] uppercase tracking-wider rounded-tl-xl">Código</th>
+            <th className="border-b border-indigo-100 p-1.5 text-left text-[8px] uppercase tracking-wider">Nome</th>
+            <th className="border-b border-indigo-100 p-1.5 text-left text-[8px] uppercase tracking-wider">Valor Base</th>
+            <th className="border-b border-indigo-100 p-1.5 text-left text-[8px] uppercase tracking-wider rounded-tr-xl">Variações</th>
           </tr>
         </thead>
         <tbody>
           {products.map((p, index) => (
-            <tr key={p.id} className={`text-xs ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-              <td className="border-b border-slate-100 p-3 text-slate-800 font-medium">
+            <tr key={p.id} className={`text-[8px] ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+              <td className="border-b border-slate-100 p-1.5 text-slate-800 font-medium">
                 <div>{p.code}</div>
-                {p.barcode && <div className="text-[9px] text-slate-400 font-mono">EAN: {p.barcode}</div>}
+                {p.barcode && <div className="text-[7px] text-slate-400 font-mono">EAN: {p.barcode}</div>}
               </td>
-              <td className="border-b border-slate-100 p-3 text-slate-800">
+              <td className="border-b border-slate-100 p-1.5 text-slate-800">
                 <div>{p.name}</div>
-                {p.description && <div className="text-[10px] text-slate-500 mt-1">{p.description}</div>}
+                {p.description && <div className="text-[7px] text-slate-500 mt-0.5 leading-tight">{p.description}</div>}
               </td>
-              <td className="border-b border-slate-100 p-3 text-slate-600">R$ {p.basePrice.toFixed(2)}</td>
-              <td className="border-b border-slate-100 p-3 text-slate-600">
+              <td className="border-b border-slate-100 p-1.5 text-slate-600">R$ {p.basePrice.toFixed(2)}</td>
+              <td className="border-b border-slate-100 p-1.5 text-slate-600">
                 {p.variations && p.variations.length > 0 ? (
-                  <div className="text-[10px]">
+                  <div className="text-[7px] leading-tight">
                     {p.variations.map((v: any, i: number) => (
-                      <div key={i} className="mb-1">
+                      <div key={i} className="mb-0.5">
                         <div>{v.name}: R$ {v.price.toFixed(2)}</div>
-                        {v.barcode && <div className="text-[9px] text-slate-400 font-mono">EAN: {v.barcode}</div>}
+                        {v.barcode && <div className="text-[6px] text-slate-400 font-mono">EAN: {v.barcode}</div>}
                       </div>
                     ))}
                   </div>
@@ -132,8 +132,8 @@ export const PrintableProducts = React.forwardRef<HTMLDivElement, PrintableProdu
           ))}
         </tbody>
       </table>
-      <div className="mt-12 text-center text-[10px] text-slate-400 border-t border-indigo-50 pt-4">
-        <p className="font-bold text-slate-500 mb-1">JESUS É BOM, DEUS É FIEL</p>
+      <div className="mt-6 text-center text-[8px] text-slate-400 border-t border-indigo-50 pt-2 print:break-inside-avoid">
+        <p className="font-bold text-slate-500 mb-0.5 uppercase">JESUS É BOM, DEUS É FIEL</p>
       </div>
     </div>
   );

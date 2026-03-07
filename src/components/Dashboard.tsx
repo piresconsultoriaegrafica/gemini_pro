@@ -2,19 +2,20 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../store';
 import { Order } from '../types';
 import { IconContainer } from './IconContainer';
-import { Plus, List, LayoutGrid, Search, Filter, UserPlus, Edit2, Calendar, Clock, DollarSign } from 'lucide-react';
+import { Plus, List, LayoutGrid, Search, Filter, UserPlus, Edit2, Calendar, Clock, DollarSign, ShoppingCart } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { OrderModal } from './OrderModal';
 import { CustomerModal } from './CustomerModal';
 import { ProductModal } from './ProductModal';
+import { ViewType } from './Sidebar';
 import { COLOR_OPTIONS } from './SettingsModal';
 
 import { calculateOrderTotal } from '../utils';
 
 import { DashboardCharts } from './DashboardCharts';
 
-export function Dashboard() {
+export function Dashboard({ setCurrentView }: { setCurrentView: (view: ViewType) => void }) {
   const { orders, productionStatuses, paymentStatuses, updateOrder, finalizeOrder } = useAppContext();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [showCharts, setShowCharts] = useState(true);
@@ -40,6 +41,9 @@ export function Dashboard() {
       } else if (e.key === 'F3') {
         e.preventDefault();
         setIsProductModalOpen(true);
+      } else if (e.key === 'F4') {
+        e.preventDefault();
+        setCurrentView('pdv');
       }
     };
 
@@ -181,6 +185,15 @@ export function Dashboard() {
             <div className="p-1 rounded-lg bg-white shadow-sm border border-slate-100 text-indigo-500"><UserPlus size={16} /></div>
             <span className="hidden lg:inline">Cliente</span>
             <kbd className="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono text-slate-500 ml-1 shadow-sm">F2</kbd>
+          </button>
+
+          <button 
+            onClick={() => setCurrentView('pdv')}
+            className="btn-3d btn-3d-secondary px-4 py-2 text-sm flex items-center gap-2"
+          >
+            <div className="p-1 rounded-lg bg-white shadow-sm border border-slate-100 text-indigo-500"><ShoppingCart size={16} /></div>
+            <span className="hidden lg:inline font-bold text-indigo-600">Venda Rápida</span>
+            <kbd className="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono text-slate-500 ml-1 shadow-sm">F4</kbd>
           </button>
 
           <button 

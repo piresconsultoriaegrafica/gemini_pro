@@ -64,7 +64,7 @@ const defaultState: AppState = {
 interface AppContextType extends AppState {
   isReady: boolean;
   updateCompanyInfo: (info: Partial<CompanyInfo>) => void;
-  addOrder: (order: Omit<Order, 'id' | 'queueNumber' | 'createdAt' | 'archived'>) => void;
+  addOrder: (order: Omit<Order, 'id' | 'queueNumber' | 'createdAt' | 'archived'>) => Order;
   updateOrder: (id: string, order: Partial<Order>) => void;
   archiveOrder: (id: string, reason: string) => void;
   unarchiveOrder: (id: string) => void;
@@ -217,21 +217,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
-  const addOrder = (orderData: Omit<Order, 'id' | 'queueNumber' | 'createdAt' | 'archived'>) => {
-    setState((prev) => {
-      const queueNumber = prev.orders.length > 0 
-        ? Math.max(...prev.orders.map(o => o.queueNumber)) + 1 
-        : 1;
-      
-      const newOrder: Order = {
-        ...orderData,
-        id: uuidv4(),
-        queueNumber,
-        createdAt: new Date().toISOString(),
-        archived: false,
-      };
-      return { ...prev, orders: [...prev.orders, newOrder] };
-    });
+  const addOrder = (orderData: Omit<Order, 'id' | 'queueNumber' | 'createdAt' | 'archived'>): Order => {
+    const queueNumber = state.orders.length > 0 
+      ? Math.max(...state.orders.map(o => o.queueNumber)) + 1 
+      : 1;
+    
+    const newOrder: Order = {
+      origin: 'order', // Default origin
+      ...orderData,
+      id: uuidv4(),
+      queueNumber,
+      createdAt: new Date().toISOString(),
+      archived: false,
+    };
+
+    setState((prev) => ({ ...prev, orders: [...prev.orders, newOrder] }));
+    return newOrder;
   };
 
   const updateOrder = (id: string, orderData: Partial<Order>) => {

@@ -1,13 +1,55 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useAppContext } from '../store';
-import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Shield, X, AlertCircle } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Shield, X, AlertCircle, Minus, Square, Maximize2, Printer } from 'lucide-react';
 import { Employee } from '../types';
+import { PrintableEmployees } from './PrintableEmployees';
 
 export function EmployeesView() {
-  const { employees, deleteEmployee, addEmployee, updateEmployee } = useAppContext();
+  const { employees, deleteEmployee, addEmployee, updateEmployee, companyInfo } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    if (!printRef.current) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const content = printRef.current.innerHTML;
+    const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map(style => style.outerHTML)
+      .join('');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Lista de Funcionários</title>
+          ${styles}
+          <style>
+            @media print {
+              @page { size: A4; margin: 10mm; }
+              body { margin: 0; padding: 0; }
+              .print-container { width: 100%; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${content}
+          </div>
+          <script>
+            window.onload = () => {
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   const filteredEmployees = useMemo(() => {
     const searchLower = searchTerm.toLowerCase().trim();
@@ -46,16 +88,25 @@ export function EmployeesView() {
           <h1 className="text-2xl font-bold text-slate-800">Funcionários</h1>
           <p className="text-sm text-slate-500 mt-1">Gerencie os acessos ao sistema</p>
         </div>
-        <button 
-          onClick={() => {
-            setEditingEmployee(null);
-            setIsModalOpen(true);
-          }}
-          className="btn-3d btn-3d-primary px-4 py-2 text-sm flex items-center gap-2"
-        >
-          <Plus size={16} />
-          Novo Funcionário
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handlePrint}
+            className="btn-3d btn-3d-secondary px-4 py-2 text-sm flex items-center gap-2"
+          >
+            <Printer size={16} />
+            Imprimir A4
+          </button>
+          <button 
+            onClick={() => {
+              setEditingEmployee(null);
+              setIsModalOpen(true);
+            }}
+            className="btn-3d btn-3d-primary px-4 py-2 text-sm flex items-center gap-2"
+          >
+            <Plus size={16} />
+            Novo Funcionário
+          </button>
+        </div>
       </div>
 
       <div className="p-8 flex-1 overflow-hidden flex flex-col">
@@ -173,6 +224,15 @@ export function EmployeesView() {
           </div>
         </div>
       )}
+
+      {/* Hidden printable content */}
+      <div className="hidden">
+        <PrintableEmployees
+          ref={printRef}
+          employees={filteredEmployees}
+          companyInfo={companyInfo}
+        />
+      </div>
     </div>
   );
 }
@@ -192,22 +252,79 @@ function EmployeeModal({
     role: employee?.role || ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
 
-  return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="window-panel w-full max-w-md overflow-hidden">
-        <div className="window-header">
-          <div className="window-title">
-            {employee ? 'Editar Funcionário' : 'Novo Funcionário'}
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-0 right-4 w-72 z-50">
+        <div className="bg-white rounded-t-xl shadow-2xl border border-slate-200 border-b-0 overflow-hidden">
+          <div 
+            className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors" 
+            onClick={() => setIsMinimized(false)}
+          >
+            <div className="font-bold text-slate-700 text-sm truncate flex items-center gap-2">
+              <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+              {employee ? 'Editar Funcionário' : 'Novo Funcionário'}
+            </div>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsMaximized(!isMaximized); setIsMinimized(false); }} 
+                className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+              >
+                <Square size={14} />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); onClose(); }} 
+                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
-          <div className="window-controls">
-            <button onClick={onClose} className="window-btn-close">
-              <X size={14} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300 ${isMaximized ? 'p-0' : 'p-4'}`}>
+      <div className={`card-3d bg-white flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${isMaximized ? 'w-full h-full rounded-none' : 'w-full max-w-md rounded-2xl shadow-2xl'}`}>
+        <div className="px-5 py-4 border-b border-slate-200/60 bg-slate-50/50 backdrop-blur-sm flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-indigo-100 p-1.5 rounded-lg text-indigo-600">
+              <Shield size={18} />
+            </div>
+            <h2 className="text-lg font-bold text-slate-800">
+              {employee ? 'Editar Funcionário' : 'Novo Funcionário'}
+            </h2>
+          </div>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => setIsMinimized(true)} 
+              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" 
+              title="Minimizar"
+            >
+              <Minus size={18} />
+            </button>
+            <button 
+              onClick={() => setIsMaximized(!isMaximized)} 
+              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" 
+              title={isMaximized ? "Restaurar" : "Maximizar"}
+            >
+              {isMaximized ? <Maximize2 size={18} /> : <Square size={18} />}
+            </button>
+            <button 
+              onClick={onClose} 
+              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" 
+              title="Fechar"
+            >
+              <X size={18} />
             </button>
           </div>
         </div>

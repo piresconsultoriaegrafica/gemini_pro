@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAppContext } from '../store';
 import { IconContainer } from './IconContainer';
-import { LayoutDashboard, Archive, Settings, Printer, Trash2, CheckCircle, Users, Package, BarChart2, ChevronLeft, ChevronRight, ChevronDown, LogOut, Calendar, User, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Archive, Settings, Printer, Trash2, CheckCircle, Users, Package, BarChart2, ChevronLeft, ChevronRight, ChevronDown, LogOut, Calendar, User, ClipboardList, ShoppingCart } from 'lucide-react';
 import { Employee } from '../types';
 
-export type ViewType = 'dashboard' | 'archived' | 'deleted' | 'finalized' | 'quotations' | 'customers' | 'products' | 'reports' | 'calendar' | 'employees';
+export type ViewType = 'dashboard' | 'archived' | 'deleted' | 'finalized' | 'quotations' | 'customers' | 'products' | 'reports' | 'calendar' | 'employees' | 'pdv';
 
 interface SidebarProps {
   currentView: ViewType;
@@ -144,6 +144,14 @@ export function Sidebar({ currentView, setCurrentView, openSettings, onLogout, c
           onClick={() => setCurrentView('dashboard')} 
           icon={LayoutDashboard} 
           label="Painel" 
+          collapsed={collapsed} 
+        />
+
+        <NavItem 
+          active={currentView === 'pdv'} 
+          onClick={() => setCurrentView('pdv')} 
+          icon={ShoppingCart} 
+          label="Venda Rápida (PDV)" 
           collapsed={collapsed} 
         />
 

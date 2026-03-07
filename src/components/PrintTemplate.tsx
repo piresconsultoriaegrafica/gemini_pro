@@ -8,10 +8,11 @@ interface PrintTemplateProps {
   companyInfo: CompanyInfo;
   type: 'receipt-partial' | 'receipt-total' | 'order' | 'quotation' | 'delivery';
   employees?: Employee[];
+  detailLevel?: 'detailed' | 'simple';
 }
 
 export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps>(
-  ({ order, companyInfo, type, employees = [] }, ref) => {
+  ({ order, companyInfo, type, employees = [], detailLevel = 'detailed' }, ref) => {
     
     const calculateSubtotal = () => {
       return (order.items || []).reduce((sum, item) => sum + calculateItemTotal(item), 0);
@@ -96,7 +97,7 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
             <p><strong>DATA:</strong> {format(new Date(order.createdAt), 'dd/MM/yy HH:mm')}</p>
           </div>
 
-          {type === 'delivery' && order.deliveryInfo && (
+          {type === 'delivery' && order.deliveryInfo && detailLevel === 'detailed' && (
             <div className="mb-3 border-b border-black pb-2 border-dashed bg-slate-50 p-1">
               <p className="font-bold border-b border-black mb-1">DADOS DE ENTREGA</p>
               <p><strong>DE:</strong> {order.deliveryInfo.senderName || companyInfo.name}</p>
@@ -115,7 +116,7 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
             </div>
           )}
 
-          {(type === 'order' || type === 'quotation' || type === 'delivery') && (
+          {(type === 'order' || type === 'quotation' || type === 'delivery') && detailLevel === 'detailed' && (
             <div className="mb-3 border-b border-black pb-2 border-dashed">
               <p className="font-bold mb-1 border-b border-black">QTD x DESCRIÇÃO</p>
               {order.items.map((item, index) => {
@@ -183,12 +184,12 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
     }
 
     return (
-      <div ref={ref} className="p-8 font-sans text-slate-800 bg-white max-w-[800px] mx-auto print:max-w-none print:w-full print:p-4">
+      <div ref={ref} className="p-4 font-sans text-slate-800 bg-white max-w-[800px] mx-auto print:max-w-none print:w-full print:p-2">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-indigo-100 pb-6 mb-6">
-          <div className="flex items-center gap-6">
+        <div className="flex items-center justify-between border-b border-indigo-100 pb-3 mb-3 print:break-inside-avoid">
+          <div className="flex items-center gap-3">
             {companyInfo.logoUrl && (
-              <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-2xl p-2 border border-indigo-100 shadow-sm">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-xl p-1 border border-indigo-100 shadow-sm">
                 <img 
                   src={companyInfo.logoUrl} 
                   alt="Logo" 
@@ -198,92 +199,92 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
               </div>
             )}
             <div>
-              <h1 className="text-xl font-bold uppercase tracking-wider text-indigo-900">{companyInfo.name}</h1>
-              <p className="text-xs mt-1 text-slate-600">{companyInfo.address}</p>
-              <p className="text-xs text-slate-600">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
-              <p className="text-xs text-slate-600">{companyInfo.email}</p>
+              <h1 className="text-sm font-bold uppercase tracking-wider text-indigo-900 leading-tight">{companyInfo.name}</h1>
+              <p className="text-[7px] mt-0.5 text-slate-600 leading-tight">{companyInfo.address}</p>
+              <p className="text-[7px] text-slate-600 leading-tight">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
+              <p className="text-[7px] text-slate-600 leading-tight">{companyInfo.email}</p>
               {(companyInfo.instagram || companyInfo.website) && (
-                <p className="text-xs mt-1 text-indigo-600">
+                <p className="text-[7px] mt-0.5 text-indigo-600 leading-tight">
                   {companyInfo.instagram && <span>IG: {companyInfo.instagram}</span>}
                   {companyInfo.instagram && companyInfo.website && <span> | </span>}
                   {companyInfo.website && <span>{companyInfo.website}</span>}
                 </p>
               )}
               {companyInfo.branches && companyInfo.branches.length > 0 && (
-                <div className="mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Filiais:</p>
+                <div className="mt-1 bg-slate-50 p-1 rounded-md border border-slate-100">
+                  <p className="text-[7px] font-bold text-slate-500 uppercase">Filiais:</p>
                   {companyInfo.branches.map(b => (
-                    <p key={b.id} className="text-[10px] text-slate-600">{b.name}: {b.address}</p>
+                    <p key={b.id} className="text-[7px] text-slate-600 leading-tight">{b.name}: {b.address}</p>
                   ))}
                 </div>
               )}
             </div>
           </div>
           <div className="text-right">
-            <h2 className="text-xl font-bold uppercase tracking-widest mb-2 text-indigo-900">
+            <h2 className="text-sm font-bold uppercase tracking-widest mb-1 text-indigo-900">
               {type === 'receipt-partial' ? 'Recibo Parcial' : 
                type === 'receipt-total' ? 'Recibo Total' : 
                type === 'quotation' ? 'Cotação' : 
                type === 'delivery' ? 'Ficha de Entrega' : 'Pedido'}
             </h2>
-            <div className="inline-block bg-indigo-50 border border-indigo-100 rounded-2xl px-4 py-2 shadow-sm">
-              <p className="text-[10px] font-bold uppercase text-indigo-600">Nº Fila</p>
-              <p className="text-2xl font-black text-indigo-900">{order.queueNumber}º</p>
+            <div className="inline-block bg-indigo-50 border border-indigo-100 rounded-xl px-2 py-1 shadow-sm">
+              <p className="text-[7px] font-bold uppercase text-indigo-600">Nº Fila</p>
+              <p className="text-lg font-black text-indigo-900 leading-none">{order.queueNumber}º</p>
             </div>
           </div>
         </div>
 
         {/* Delivery Info (A4) */}
-        {type === 'delivery' && order.deliveryInfo && (
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border border-orange-200 bg-orange-50/50 p-6 rounded-2xl">
-              <h3 className="text-sm font-bold text-orange-800 uppercase tracking-wider border-b border-orange-200 pb-2 mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-4 bg-orange-500 rounded-full"></span>
+        {type === 'delivery' && order.deliveryInfo && detailLevel === 'detailed' && (
+          <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-3 print:break-inside-avoid">
+            <div className="border border-orange-200 bg-orange-50/50 p-3 rounded-xl">
+              <h3 className="text-[8px] font-bold text-orange-800 uppercase tracking-wider border-b border-orange-200 pb-1 mb-2 flex items-center gap-1">
+                <span className="w-1 h-3 bg-orange-500 rounded-full"></span>
                 Dados de Entrega
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-orange-600">Remetente</p>
-                  <p className="font-bold text-slate-800">{order.deliveryInfo.senderName || companyInfo.name}</p>
+                  <p className="text-[7px] font-bold uppercase text-orange-600">Remetente</p>
+                  <p className="font-bold text-[8px] text-slate-800">{order.deliveryInfo.senderName || companyInfo.name}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-orange-600">Destinatário</p>
-                  <p className="font-bold text-slate-800">{order.deliveryInfo.receiverName}</p>
-                  <p className="text-xs text-slate-600">{order.deliveryInfo.phone}</p>
+                  <p className="text-[7px] font-bold uppercase text-orange-600">Destinatário</p>
+                  <p className="font-bold text-[8px] text-slate-800">{order.deliveryInfo.receiverName}</p>
+                  <p className="text-[7px] text-slate-600">{order.deliveryInfo.phone}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-orange-600">Endereço</p>
-                  <p className="text-sm text-slate-800 font-medium">{order.deliveryInfo.address}</p>
+                  <p className="text-[7px] font-bold uppercase text-orange-600">Endereço</p>
+                  <p className="text-[8px] text-slate-800 font-medium">{order.deliveryInfo.address}</p>
                   {order.deliveryInfo.referencePoint && (
-                    <p className="text-xs text-slate-500 mt-1 italic">Ref: {order.deliveryInfo.referencePoint}</p>
+                    <p className="text-[7px] text-slate-500 mt-0.5 italic">Ref: {order.deliveryInfo.referencePoint}</p>
                   )}
                 </div>
                 {order.deliveryInfo.observations && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-orange-600">Observações</p>
-                    <p className="text-xs text-slate-600">{order.deliveryInfo.observations}</p>
+                    <p className="text-[7px] font-bold uppercase text-orange-600">Observações</p>
+                    <p className="text-[7px] text-slate-600">{order.deliveryInfo.observations}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="border border-indigo-200 bg-indigo-50/50 p-6 rounded-2xl flex flex-col justify-center text-center">
-              <h3 className="text-sm font-bold text-indigo-800 uppercase tracking-wider border-b border-indigo-200 pb-2 mb-4">
+            <div className="border border-indigo-200 bg-indigo-50/50 p-3 rounded-xl flex flex-col justify-center text-center">
+              <h3 className="text-[8px] font-bold text-indigo-800 uppercase tracking-wider border-b border-indigo-200 pb-1 mb-2">
                 Cobrança na Entrega
               </h3>
-              <div className="space-y-4">
-                <div className={`p-4 rounded-2xl border-2 border-dashed ${order.deliveryInfo.paymentAtLocation ? 'border-orange-400 bg-orange-100' : 'border-emerald-400 bg-emerald-100'}`}>
-                  <p className="text-xs font-bold uppercase text-slate-600 mb-1">Status de Pagamento:</p>
-                  <p className={`text-lg font-black ${order.deliveryInfo.paymentAtLocation ? 'text-orange-700' : 'text-emerald-700'}`}>
+              <div className="space-y-2">
+                <div className={`p-2 rounded-xl border border-dashed ${order.deliveryInfo.paymentAtLocation ? 'border-orange-400 bg-orange-100' : 'border-emerald-400 bg-emerald-100'}`}>
+                  <p className="text-[7px] font-bold uppercase text-slate-600 mb-0.5">Status de Pagamento:</p>
+                  <p className={`text-sm font-black ${order.deliveryInfo.paymentAtLocation ? 'text-orange-700' : 'text-emerald-700'}`}>
                     {order.deliveryInfo.paymentAtLocation ? 'RECEBER NO LOCAL' : 'JÁ PAGO / NÃO COBRAR'}
                   </p>
                 </div>
                 
                 {order.deliveryInfo.paymentAtLocation && (
-                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-indigo-100">
-                    <p className="text-xs font-bold uppercase text-indigo-600 mb-1">VALOR A RECEBER:</p>
-                    <p className="text-3xl font-black text-indigo-900">R$ {remaining.toFixed(2)}</p>
-                    <p className="text-[10px] text-slate-400 mt-2 uppercase">Confira os itens antes de entregar</p>
+                  <div className="bg-white p-2 rounded-xl shadow-sm border border-indigo-100">
+                    <p className="text-[7px] font-bold uppercase text-indigo-600 mb-0.5">VALOR A RECEBER:</p>
+                    <p className="text-xl font-black text-indigo-900">R$ {remaining.toFixed(2)}</p>
+                    <p className="text-[7px] text-slate-400 mt-1 uppercase">Confira os itens antes de entregar</p>
                   </div>
                 )}
               </div>
@@ -292,59 +293,61 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
         )}
 
         {/* Info Box */}
-        <div className="border border-indigo-100 bg-slate-50/50 p-4 mb-6 rounded-2xl grid grid-cols-2 gap-4">
+        <div className="border border-indigo-100 bg-slate-50/50 p-2 mb-3 rounded-xl grid grid-cols-2 gap-2 print:break-inside-avoid">
           <div>
-            <p className="text-[10px] font-bold uppercase text-indigo-500">Cliente</p>
-            <p className="font-bold text-sm text-slate-800">{order.customerName}</p>
-            <p className="text-xs text-slate-600">{order.customerPhone}</p>
+            <p className="text-[7px] font-bold uppercase text-indigo-500">Cliente</p>
+            <p className="font-bold text-[8px] text-slate-800">{order.customerName}</p>
+            <p className="text-[7px] text-slate-600">{order.customerPhone}</p>
             {order.employeeId && (
-              <p className="text-[10px] mt-2 text-slate-500">
+              <p className="text-[7px] mt-1 text-slate-500">
                 <span className="font-bold uppercase text-indigo-500">Atendente: </span> 
                 {employeeName}
               </p>
             )}
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-bold uppercase text-indigo-500">Data do Pedido</p>
-            <p className="font-bold text-sm text-slate-800">{format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}</p>
+            <p className="text-[7px] font-bold uppercase text-indigo-500">Data do Pedido</p>
+            <p className="font-bold text-[8px] text-slate-800">{format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}</p>
           </div>
         </div>
 
         {/* Items Table */}
-        {(type === 'order' || type === 'quotation' || type === 'delivery') && (
-          <table className="w-full mb-6 border-collapse">
-            <thead>
-              <tr className="border-b border-indigo-100 text-indigo-600">
-                <th className="text-left py-2 text-[10px] uppercase tracking-wider">Item / Descrição</th>
-                <th className="text-center py-2 text-[10px] uppercase tracking-wider">Qtd</th>
-                {type !== 'delivery' && <th className="text-right py-2 text-[10px] uppercase tracking-wider">V. Unit</th>}
-                {type !== 'delivery' && <th className="text-right py-2 text-[10px] uppercase tracking-wider">Total</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {order.items.map((item, index) => {
-                return (
-                  <tr key={item.id} className="border-b border-slate-100">
-                    <td className="py-3">
-                      <p className="font-bold text-xs text-slate-800">{item.name}</p>
-                      {item.observations && <p className="text-[10px] italic text-slate-500 mt-0.5">{item.observations}</p>}
-                    </td>
-                    <td className="text-center py-3 text-xs text-slate-600">{item.quantity}</td>
-                    {type !== 'delivery' && <td className="text-right py-3 text-xs text-slate-600">R$ {item.unitPrice.toFixed(2)}</td>}
-                    {type !== 'delivery' && <td className="text-right py-3 font-bold text-xs text-indigo-900">R$ {calculateItemTotal(item).toFixed(2)}</td>}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        {(type === 'order' || type === 'quotation' || type === 'delivery') && detailLevel === 'detailed' && (
+          <div className="mb-3">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-indigo-100 text-indigo-600">
+                  <th className="text-left py-1 text-[7px] uppercase tracking-wider">Item / Descrição</th>
+                  <th className="text-center py-1 text-[7px] uppercase tracking-wider">Qtd</th>
+                  {type !== 'delivery' && <th className="text-right py-1 text-[7px] uppercase tracking-wider">V. Unit</th>}
+                  {type !== 'delivery' && <th className="text-right py-1 text-[7px] uppercase tracking-wider">Total</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {order.items.map((item, index) => {
+                  return (
+                    <tr key={item.id} className="border-b border-slate-100 print:break-inside-avoid">
+                      <td className="py-1.5">
+                        <p className="font-bold text-[8px] text-slate-800">{item.name}</p>
+                        {item.observations && <p className="text-[7px] italic text-slate-500 mt-0.5">{item.observations}</p>}
+                      </td>
+                      <td className="text-center py-1.5 text-[8px] text-slate-600">{item.quantity}</td>
+                      {type !== 'delivery' && <td className="text-right py-1.5 text-[8px] text-slate-600">R$ {item.unitPrice.toFixed(2)}</td>}
+                      {type !== 'delivery' && <td className="text-right py-1.5 font-bold text-[8px] text-indigo-900">R$ {calculateItemTotal(item).toFixed(2)}</td>}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Financial Summary */}
         {type !== 'delivery' && (
-          <div className="border border-indigo-100 p-6 rounded-2xl bg-indigo-50/30">
-            <h3 className="font-bold uppercase mb-4 border-b border-indigo-100 pb-2 text-xs text-indigo-900">Resumo Financeiro</h3>
+          <div className="border border-indigo-100 p-3 rounded-xl bg-indigo-50/30 print:break-inside-avoid">
+            <h3 className="font-bold uppercase mb-2 border-b border-indigo-100 pb-1 text-[8px] text-indigo-900">Resumo Financeiro</h3>
             
-            <div className="space-y-2 text-xs text-slate-600">
+            <div className="space-y-1 text-[7px] text-slate-600">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
                 <span>R$ {calculateSubtotal().toFixed(2)}</span>
@@ -361,17 +364,17 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
                 </div>
               )}
               
-              <div className="flex justify-between font-bold text-sm border-t border-indigo-100 pt-2 mt-2 text-indigo-900">
+              <div className="flex justify-between font-bold text-[9px] border-t border-indigo-100 pt-1 mt-1 text-indigo-900">
                 <span>TOTAL:</span>
                 <span>R$ {total.toFixed(2)}</span>
               </div>
               
-              <div className="flex justify-between mt-4 text-emerald-700 font-bold text-sm bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+              <div className="flex justify-between mt-2 text-emerald-700 font-bold text-[9px] bg-emerald-50 p-1 rounded-md border border-emerald-100">
                 <span>Valor Recebido:</span>
                 <span>R$ {order.amountPaid.toFixed(2)}</span>
               </div>
               
-              <div className="flex justify-between font-bold border-t border-indigo-100 pt-2 mt-2 text-slate-800">
+              <div className="flex justify-between font-bold border-t border-indigo-100 pt-1 mt-1 text-slate-800">
                 <span>Falta Pagar:</span>
                 <span className={remaining > 0 ? 'text-rose-600' : 'text-emerald-600'}>
                   R$ {remaining.toFixed(2)}
@@ -379,57 +382,57 @@ export const PrintTemplate = React.forwardRef<HTMLDivElement, PrintTemplateProps
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-indigo-100 grid grid-cols-2 gap-4">
+            <div className="mt-3 pt-2 border-t border-indigo-100 grid grid-cols-2 gap-2">
               <div>
-                <p className="text-[10px] font-bold uppercase text-indigo-500 mb-1">Forma de Pagamento</p>
-                <p className="font-bold uppercase text-xs text-slate-800">{order.paymentMethod}</p>
+                <p className="text-[7px] font-bold uppercase text-indigo-500 mb-0.5">Forma de Pagamento</p>
+                <p className="font-bold uppercase text-[8px] text-slate-800">{order.paymentMethod}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold uppercase text-indigo-500 mb-1">Status Pagamento</p>
-                <p className="font-bold uppercase text-xs text-slate-800">{order.paymentStatus}</p>
+                <p className="text-[7px] font-bold uppercase text-indigo-500 mb-0.5">Status Pagamento</p>
+                <p className="font-bold uppercase text-[8px] text-slate-800">{order.paymentStatus}</p>
               </div>
             </div>
           </div>
         )}
 
-        {type === 'delivery' && (
-          <div className="mt-8 pt-8 border-t-2 border-dashed border-slate-200 text-center">
-            <div className="inline-block border-2 border-slate-800 p-4 rounded-xl">
-              <p className="text-xs font-bold uppercase mb-1">Assinatura do Recebedor</p>
-              <div className="w-64 h-12 border-b border-slate-400"></div>
-              <p className="text-[10px] text-slate-400 mt-1">Data: ____/____/____ Hora: ____:____</p>
+        {type === 'delivery' && detailLevel === 'detailed' && (
+          <div className="mt-4 pt-4 border-t border-dashed border-slate-200 text-center print:break-inside-avoid">
+            <div className="inline-block border border-slate-800 p-2 rounded-lg">
+              <p className="text-[8px] font-bold uppercase mb-0.5">Assinatura do Recebedor</p>
+              <div className="w-32 h-6 border-b border-slate-400"></div>
+              <p className="text-[7px] text-slate-400 mt-0.5">Data: ____/____/____ Hora: ____:____</p>
             </div>
           </div>
         )}
 
-        {type !== 'delivery' && !isReceipt && (
-          <div className="mt-6 border border-indigo-100 p-4 rounded-2xl bg-slate-50/50">
-            <h3 className="font-bold uppercase mb-1 text-[10px] text-indigo-500">Status do Pedido</h3>
-            <p className="font-bold text-sm uppercase text-slate-800">{order.status}</p>
+        {type !== 'delivery' && !isReceipt && detailLevel === 'detailed' && (
+          <div className="mt-3 border border-indigo-100 p-2 rounded-xl bg-slate-50/50 print:break-inside-avoid">
+            <h3 className="font-bold uppercase mb-0.5 text-[7px] text-indigo-500">Status do Pedido</h3>
+            <p className="font-bold text-[8px] uppercase text-slate-800">{order.status}</p>
           </div>
         )}
 
-        {!isReceipt && totalDiscount > 0 && (
-          <div className="mt-6 border border-emerald-100 bg-emerald-50 p-4 text-center rounded-2xl">
-            <p className="text-[10px] font-bold uppercase text-emerald-700 mb-1">VOCÊ ECONOMIZOU NESTE PEDIDO:</p>
-            <p className="font-black text-lg text-emerald-800">R$ {totalDiscount.toFixed(2)}</p>
+        {!isReceipt && totalDiscount > 0 && detailLevel === 'detailed' && (
+          <div className="mt-3 border border-emerald-100 bg-emerald-50 p-2 text-center rounded-xl print:break-inside-avoid">
+            <p className="text-[7px] font-bold uppercase text-emerald-700 mb-0.5">VOCÊ ECONOMIZOU NESTE PEDIDO:</p>
+            <p className="font-black text-sm text-emerald-800">R$ {totalDiscount.toFixed(2)}</p>
           </div>
         )}
 
-        {!isReceipt && (
-          <div className="mt-6">
-            <h3 className="font-bold uppercase mb-2 text-[10px] text-indigo-500">Observações Gerais</h3>
-            <p className="text-xs text-slate-600 whitespace-pre-wrap border border-indigo-100 p-4 rounded-2xl bg-slate-50/50 min-h-[80px]">
+        {!isReceipt && detailLevel === 'detailed' && (
+          <div className="mt-3 print:break-inside-avoid">
+            <h3 className="font-bold uppercase mb-1 text-[7px] text-indigo-500">Observações Gerais</h3>
+            <p className="text-[8px] text-slate-600 whitespace-pre-wrap border border-indigo-100 p-2 rounded-xl bg-slate-50/50 min-h-[40px]">
               {order.generalObservations || 'Nenhuma observação.'}
             </p>
           </div>
         )}
 
         {/* Footer */}
-        <div className="mt-12 text-center text-[10px] text-slate-400 border-t border-indigo-50 pt-4">
-          <p className="font-bold text-slate-500 mb-1">JESUS É BOM, DEUS É FIEL</p>
+        <div className="mt-6 text-center text-[7px] text-slate-400 border-t border-indigo-50 pt-2 print:break-inside-avoid">
+          <p className="font-bold text-slate-500 mb-0.5">JESUS É BOM, DEUS É FIEL</p>
           <p>Documento gerado em {format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
-          <p className="mt-1">Obrigado pela preferência!</p>
+          <p className="mt-0.5">Obrigado pela preferência!</p>
         </div>
       </div>
     );

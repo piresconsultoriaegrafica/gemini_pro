@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useAppContext } from '../store';
 import { IconContainer } from './IconContainer';
-import { Printer, Download, FileText, Filter, Calendar, DollarSign, Package, CreditCard, BarChart2, List } from 'lucide-react';
+import { Printer, Download, FileText, Filter, Calendar, DollarSign, Package, CreditCard, BarChart2, List, ShoppingCart } from 'lucide-react';
 import { exportToExcel, exportToPDF } from '../utils/exportUtils';
 import { calculateOrderTotal, calculateItemTotal, calculateOrderProfit, calculateItemCost } from '../utils';
 import { format, isAfter, isBefore, parseISO, startOfMonth, endOfMonth } from 'date-fns';
@@ -14,6 +14,7 @@ export function ReportsView() {
   const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('all');
+  const [originFilter, setOriginFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'list' | 'chart'>('chart');
   
   const printRef = useRef<HTMLDivElement>(null);
@@ -30,10 +31,11 @@ export function ReportsView() {
       
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       const matchesPayment = paymentMethodFilter === 'all' || order.paymentMethod === paymentMethodFilter;
+      const matchesOrigin = originFilter === 'all' || (order.origin || 'order') === originFilter;
       
-      return isWithinDateRange && matchesStatus && matchesPayment;
+      return isWithinDateRange && matchesStatus && matchesPayment && matchesOrigin;
     });
-  }, [orders, startDate, endDate, statusFilter, paymentMethodFilter]);
+  }, [orders, startDate, endDate, statusFilter, paymentMethodFilter, originFilter]);
 
   // Faturamento Total (Líquido - o que foi efetivamente vendido)
   const totalRevenue = filteredOrders.reduce((sum, order) => sum + calculateOrderTotal(order), 0);
@@ -94,6 +96,26 @@ export function ReportsView() {
         return new Date(`${yearA}-${monthA}-${dayA}`).getTime() - new Date(`${yearB}-${monthB}-${dayB}`).getTime();
       })
       .map(([date, revenue]) => ({ date, revenue }));
+  }, [filteredOrders]);
+
+  // Vendas por Origem
+  const salesByOrigin = useMemo(() => {
+    const origins: Record<string, { revenue: number; count: number }> = {
+      pdv: { revenue: 0, count: 0 },
+      order: { revenue: 0, count: 0 }
+    };
+    
+    filteredOrders.forEach(order => {
+      const origin = order.origin || 'order';
+      const total = calculateOrderTotal(order);
+      if (!origins[origin]) {
+        origins[origin] = { revenue: 0, count: 0 };
+      }
+      origins[origin].revenue += total;
+      origins[origin].count += 1;
+    });
+    
+    return Object.entries(origins).sort((a, b) => b[1].revenue - a[1].revenue);
   }, [filteredOrders]);
 
   const handlePrint = () => {
@@ -296,6 +318,18 @@ export function ReportsView() {
               <option value="Transferência">Transferência</option>
             </select>
           </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Origem</label>
+            <select 
+              value={originFilter}
+              onChange={(e) => setOriginFilter(e.target.value)}
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            >
+              <option value="all">Todas</option>
+              <option value="pdv">PDV</option>
+              <option value="order">Pedido</option>
+            </select>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
@@ -350,6 +384,7 @@ export function ReportsView() {
                 <thead className="bg-slate-50 sticky top-0">
                   <tr>
                     <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase">Data</th>
+                    <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase">Origem</th>
                     <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase">Cliente</th>
                     <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase text-right">Total</th>
                     <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase text-right">Lucro</th>
@@ -364,6 +399,11 @@ export function ReportsView() {
                     return (
                       <tr key={i} className="hover:bg-slate-50">
                         <td className="px-6 py-3 text-sm text-slate-700">{format(parseISO(order.createdAt), 'dd/MM/yy HH:mm')}</td>
+                        <td className="px-6 py-3 text-sm text-slate-700">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${order.origin === 'pdv' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {order.origin === 'pdv' ? 'PDV' : 'Pedido'}
+                          </span>
+                        </td>
                         <td className="px-6 py-3 text-sm text-slate-700">{order.customerName}</td>
                         <td className="px-6 py-3 text-sm font-medium text-slate-800 text-right">R$ {total.toFixed(2)}</td>
                         <td className="px-6 py-3 text-sm font-medium text-emerald-600 text-right">R$ {profit.toFixed(2)}</td>
@@ -513,6 +553,35 @@ export function ReportsView() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[400px]">
             <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 shrink-0">
               <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                <ShoppingCart size={18} className="text-amber-500" />
+                Vendas por Origem
+              </h3>
+            </div>
+            <div className="p-4 flex-1 overflow-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-slate-50 sticky top-0">
+                  <tr>
+                    <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase">Origem</th>
+                    <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase text-right">Qtd</th>
+                    <th className="px-6 py-3 text-xs font-medium text-slate-500 uppercase text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {salesByOrigin.map(([origin, data], i) => (
+                    <tr key={i} className="hover:bg-slate-50">
+                      <td className="px-6 py-3 text-sm text-slate-700 capitalize">{origin === 'pdv' ? 'PDV' : 'Pedido'}</td>
+                      <td className="px-6 py-3 text-sm text-slate-700 text-right">{data.count}</td>
+                      <td className="px-6 py-3 text-sm font-medium text-slate-800 text-right">R$ {data.revenue.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[400px]">
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 shrink-0">
+              <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                 <CreditCard size={18} className="text-emerald-500" />
                 Recebimentos por Forma de Pagamento
               </h3>
@@ -579,12 +648,12 @@ export function ReportsView() {
 
         {/* Hidden printable content */}
         <div className="hidden">
-          <div ref={printRef} className="p-8 font-sans text-slate-800 bg-white print:p-4">
+          <div ref={printRef} className="p-4 font-sans text-slate-800 bg-white print:p-2">
             {companyInfo && (
-              <div className="flex items-center justify-between mb-6 border-b border-indigo-100 pb-6">
-                <div className="flex items-center gap-6">
+              <div className="flex items-center justify-between mb-3 border-b border-indigo-100 pb-3 print:break-inside-avoid">
+                <div className="flex items-center gap-3">
                   {companyInfo.logoUrl && (
-                    <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-2xl p-2 border border-indigo-100 shadow-sm">
+                    <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-indigo-50 rounded-xl p-1 border border-indigo-100 shadow-sm">
                       <img 
                         src={companyInfo.logoUrl} 
                         alt="Logo" 
@@ -594,14 +663,14 @@ export function ReportsView() {
                     </div>
                   )}
                   <div>
-                    <h2 className="text-xl font-bold uppercase text-indigo-900">{companyInfo.name}</h2>
-                    <p className="text-xs text-slate-600">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
-                    <p className="text-xs text-slate-600">{companyInfo.address}</p>
+                    <h2 className="text-sm font-bold uppercase text-indigo-900">{companyInfo.name}</h2>
+                    <p className="text-[8px] text-slate-600 leading-tight">CNPJ: {companyInfo.cnpj} | Tel: {companyInfo.phone}</p>
+                    <p className="text-[8px] text-slate-600 leading-tight">{companyInfo.address}</p>
                     {companyInfo.branches && companyInfo.branches.length > 0 && (
-                      <div className="mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase">Filiais:</p>
+                      <div className="mt-1 bg-slate-50 p-1 rounded-md border border-slate-100">
+                        <p className="text-[7px] font-bold text-slate-500 uppercase">Filiais:</p>
                         {companyInfo.branches.map(b => (
-                          <p key={b.id} className="text-[10px] text-slate-600">{b.name}: {b.address}</p>
+                          <p key={b.id} className="text-[7px] text-slate-600 leading-tight">{b.name}: {b.address}</p>
                         ))}
                       </div>
                     )}
@@ -609,65 +678,85 @@ export function ReportsView() {
                 </div>
               </div>
             )}
-            <h1 className="text-xl font-bold uppercase text-center mb-6 tracking-widest text-indigo-900 bg-indigo-50 py-3 rounded-2xl">RELATÓRIO FINANCEIRO</h1>
-            <p className="text-center text-slate-500 mb-6 text-xs">
+            <h1 className="text-sm font-bold uppercase text-center mb-3 tracking-widest text-indigo-900 bg-indigo-50 py-1.5 rounded-xl print:break-inside-avoid">RELATÓRIO FINANCEIRO</h1>
+            <p className="text-center text-slate-500 mb-3 text-[8px] print:break-inside-avoid">
               Período: {startDate ? format(parseISO(startDate), 'dd/MM/yyyy') : 'Início'} até {endDate ? format(parseISO(endDate), 'dd/MM/yyyy') : 'Hoje'}
             </p>
             
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 uppercase font-bold">Faturamento Total</p>
-                <p className="text-sm font-bold text-indigo-900">R$ {totalRevenue.toFixed(2)}</p>
+            <div className="grid grid-cols-3 gap-2 mb-3 print:break-inside-avoid">
+              <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                <p className="text-[7px] text-slate-500 uppercase font-bold">Faturamento Total</p>
+                <p className="text-[10px] font-bold text-indigo-900">R$ {totalRevenue.toFixed(2)}</p>
               </div>
-              <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                <p className="text-[10px] text-emerald-600 uppercase font-bold">Valor Recebido</p>
-                <p className="text-sm font-bold text-emerald-900">R$ {totalPaid.toFixed(2)}</p>
+              <div className="bg-emerald-50 p-2 rounded-xl border border-emerald-100">
+                <p className="text-[7px] text-emerald-600 uppercase font-bold">Valor Recebido</p>
+                <p className="text-[10px] font-bold text-emerald-900">R$ {totalPaid.toFixed(2)}</p>
               </div>
-              <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100">
-                <p className="text-[10px] text-rose-600 uppercase font-bold">Valor Pendente</p>
-                <p className="text-sm font-bold text-rose-900">R$ {totalPending.toFixed(2)}</p>
+              <div className="bg-rose-50 p-2 rounded-xl border border-rose-100">
+                <p className="text-[7px] text-rose-600 uppercase font-bold">Valor Pendente</p>
+                <p className="text-[10px] font-bold text-rose-900">R$ {totalPending.toFixed(2)}</p>
               </div>
             </div>
 
-            <h2 className="text-sm font-bold mb-3 text-indigo-900 uppercase tracking-wider">Vendas por Produto</h2>
-            <table className="w-full border-collapse mb-6">
+            <h2 className="text-[8px] font-bold mb-1.5 text-indigo-900 uppercase tracking-wider print:break-inside-avoid">Vendas por Origem</h2>
+            <table className="w-full border-collapse mb-4">
               <thead>
                 <tr className="bg-indigo-50 text-indigo-900">
-                  <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tl-2xl">Produto</th>
-                  <th className="border-b border-indigo-100 p-3 text-right text-[10px] uppercase tracking-wider">Qtd</th>
-                  <th className="border-b border-indigo-100 p-3 text-right text-[10px] uppercase tracking-wider rounded-tr-2xl">Receita</th>
+                  <th className="border-b border-indigo-100 p-1.5 text-left text-[8px] uppercase tracking-wider rounded-tl-xl">Origem</th>
+                  <th className="border-b border-indigo-100 p-1.5 text-right text-[8px] uppercase tracking-wider">Qtd</th>
+                  <th className="border-b border-indigo-100 p-1.5 text-right text-[8px] uppercase tracking-wider rounded-tr-xl">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesByOrigin.map(([origin, data], i) => (
+                  <tr key={i} className={`text-[8px] ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-800 font-medium capitalize">{origin === 'pdv' ? 'PDV' : 'Pedido'}</td>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-600 text-right">{data.count}</td>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-600 text-right">R$ {data.revenue.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <h2 className="text-[8px] font-bold mb-1.5 text-indigo-900 uppercase tracking-wider print:break-inside-avoid">Vendas por Produto</h2>
+            <table className="w-full border-collapse mb-4">
+              <thead>
+                <tr className="bg-indigo-50 text-indigo-900">
+                  <th className="border-b border-indigo-100 p-1.5 text-left text-[8px] uppercase tracking-wider rounded-tl-xl">Produto</th>
+                  <th className="border-b border-indigo-100 p-1.5 text-right text-[8px] uppercase tracking-wider">Qtd</th>
+                  <th className="border-b border-indigo-100 p-1.5 text-right text-[8px] uppercase tracking-wider rounded-tr-xl">Receita</th>
                 </tr>
               </thead>
               <tbody>
                 {productsSold.map(([name, data], i) => (
-                  <tr key={i} className={`text-xs ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                    <td className="border-b border-slate-100 p-3 text-slate-800 font-medium">{name}</td>
-                    <td className="border-b border-slate-100 p-3 text-slate-600 text-right">{data.quantity}</td>
-                    <td className="border-b border-slate-100 p-3 text-slate-600 text-right">R$ {data.revenue.toFixed(2)}</td>
+                  <tr key={i} className={`text-[8px] ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-800 font-medium">{name}</td>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-600 text-right">{data.quantity}</td>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-600 text-right">R$ {data.revenue.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <h2 className="text-sm font-bold mb-3 text-indigo-900 uppercase tracking-wider">Recebimentos por Forma de Pagamento</h2>
-            <table className="w-full border-collapse mb-6">
+            <h2 className="text-[8px] font-bold mb-1.5 text-indigo-900 uppercase tracking-wider print:break-inside-avoid">Recebimentos por Forma de Pagamento</h2>
+            <table className="w-full border-collapse mb-4">
               <thead>
                 <tr className="bg-indigo-50 text-indigo-900">
-                  <th className="border-b border-indigo-100 p-3 text-left text-[10px] uppercase tracking-wider rounded-tl-2xl">Método</th>
-                  <th className="border-b border-indigo-100 p-3 text-right text-[10px] uppercase tracking-wider rounded-tr-2xl">Valor</th>
+                  <th className="border-b border-indigo-100 p-1.5 text-left text-[8px] uppercase tracking-wider rounded-tl-xl">Método</th>
+                  <th className="border-b border-indigo-100 p-1.5 text-right text-[8px] uppercase tracking-wider rounded-tr-xl">Valor</th>
                 </tr>
               </thead>
               <tbody>
                 {paymentMethods.map(([method, amount], i) => (
-                  <tr key={i} className={`text-xs ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                    <td className="border-b border-slate-100 p-3 text-slate-800 font-medium">{method}</td>
-                    <td className="border-b border-slate-100 p-3 text-slate-600 text-right">R$ {amount.toFixed(2)}</td>
+                  <tr key={i} className={`text-[8px] ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-800 font-medium">{method}</td>
+                    <td className="border-b border-slate-100 p-1.5 text-slate-600 text-right">R$ {amount.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="mt-12 text-center text-[10px] text-slate-400 border-t border-indigo-50 pt-4">
-              <p className="font-bold text-slate-500 mb-1">JESUS É BOM, DEUS É FIEL</p>
+            <div className="mt-6 text-center text-[8px] text-slate-400 border-t border-indigo-50 pt-2 print:break-inside-avoid">
+              <p className="font-bold text-slate-500 mb-0.5 uppercase">JESUS É BOM, DEUS É FIEL</p>
             </div>
           </div>
         </div>

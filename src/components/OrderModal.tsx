@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../store';
 import { Order, ProductItem, DiscountType } from '../types';
-import { X, Plus, Trash2, Printer, Save, Archive, AlertCircle, Search, UserPlus, CheckCircle, Download, FileText } from 'lucide-react';
+import { 
+  X, Plus, Trash2, Printer, Save, Archive, AlertCircle, Search, 
+  UserPlus, CheckCircle, Download, FileText, Minus, Square, Maximize2, Package
+} from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { PrintTemplate } from './PrintTemplate';
 import { CustomerModal } from './CustomerModal';
@@ -56,6 +59,8 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -252,24 +257,61 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
     setShowProductDropdown(false);
   };
 
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-0 right-4 w-72 z-50">
+        <div className="bg-white rounded-t-xl shadow-2xl border border-slate-200 border-b-0 overflow-hidden">
+          <div 
+            className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors" 
+            onClick={() => setIsMinimized(false)}
+          >
+            <div className="font-bold text-slate-700 text-sm truncate flex items-center gap-2">
+              <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+              {order ? (order.isQuotation ? `Cotação #${order.queueNumber}` : `Pedido #${order.queueNumber}`) : 'Novo Pedido'}
+            </div>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsMaximized(!isMaximized); setIsMinimized(false); }} 
+                className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+              >
+                <Square size={14} />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); onClose(); }} 
+                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300">
-      <div className="card-3d bg-white w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300 ${isMaximized ? 'p-0' : 'p-4'}`}>
+      <div className={`card-3d bg-white flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${isMaximized ? 'w-full h-full rounded-none' : 'w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl'}`}>
         
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200/60 flex items-center justify-between bg-slate-50/50 backdrop-blur-sm">
-          <div>
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              {order ? (order.isQuotation ? `Cotação #${order.queueNumber}` : `Pedido #${order.queueNumber}`) : 'Novo Pedido'}
-              {order && (
-                <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                  order.isQuotation ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                }`}>
-                  {order.isQuotation ? 'Rascunho' : 'Ativo'}
-                </span>
-              )}
-            </h2>
-            {order && <p className="text-xs text-slate-500 mt-1 font-medium">Criado em: {new Date(order.createdAt).toLocaleString('pt-BR')}</p>}
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-100 p-2 rounded-xl text-indigo-600">
+              <Package size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                {order ? (order.isQuotation ? `Cotação #${order.queueNumber}` : `Pedido #${order.queueNumber}`) : 'Novo Pedido'}
+                {order && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                    order.isQuotation ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                  }`}>
+                    {order.isQuotation ? 'Rascunho' : 'Ativo'}
+                  </span>
+                )}
+              </h2>
+              {order && <p className="text-xs text-slate-500 mt-1 font-medium">Criado em: {new Date(order.createdAt).toLocaleString('pt-BR')}</p>}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {order && (
@@ -326,12 +368,30 @@ export function OrderModal({ order, onClose, isReadOnly = false }: OrderModalPro
                 )}
               </div>
             )}
-            <button 
-              onClick={onClose} 
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
+            
+            <div className="flex items-center gap-1 border-l border-slate-200/60 pl-2">
+              <button 
+                onClick={() => setIsMinimized(true)} 
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" 
+                title="Minimizar"
+              >
+                <Minus size={18} />
+              </button>
+              <button 
+                onClick={() => setIsMaximized(!isMaximized)} 
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" 
+                title={isMaximized ? "Restaurar" : "Maximizar"}
+              >
+                {isMaximized ? <Maximize2 size={18} /> : <Square size={18} />}
+              </button>
+              <button 
+                onClick={onClose} 
+                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" 
+                title="Fechar"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
         </div>
 

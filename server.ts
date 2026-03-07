@@ -53,7 +53,11 @@ function initDb() {
 }
 
 async function startServer() {
-  initDb();
+  try {
+    initDb();
+  } catch (error) {
+    console.error("Failed to initialize database:", error);
+  }
   const app = express();
   const PORT = 3000;
 
@@ -63,6 +67,11 @@ async function startServer() {
 
   // API Routes
   
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok" });
+  });
+
   // Get full app state
   app.get("/api/state", (req, res) => {
     try {

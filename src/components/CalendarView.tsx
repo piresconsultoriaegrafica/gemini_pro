@@ -292,9 +292,9 @@ export function CalendarView() {
 
       <div className="p-6 space-y-6 print:p-4 print:space-y-4">
         {/* Print Only Header */}
-        <div id="calendar-print-header" className="hidden print:block text-center mb-6">
-          <h1 className="text-3xl font-bold text-slate-900 mb-1">Calendário de Entregas</h1>
-          <h2 className="text-xl text-slate-600 uppercase tracking-wide">
+        <div id="calendar-print-header" className="hidden print:block text-center mb-3">
+          <h1 className="text-sm font-bold text-slate-900 mb-0.5 uppercase tracking-widest">Calendário de Entregas</h1>
+          <h2 className="text-[10px] text-slate-600 uppercase tracking-wide">
             {months[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h2>
         </div>
@@ -303,12 +303,12 @@ export function CalendarView() {
         <div className="card-3d overflow-hidden print:shadow-none print:border-slate-400 print:rounded-none">
           <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 print:bg-slate-100 print:border-slate-400">
             {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-              <div key={day} className="py-3 text-center text-sm font-semibold text-slate-600 uppercase tracking-wider print:text-slate-800 print:font-bold print:py-2">
+              <div key={day} className="py-3 text-center text-sm font-semibold text-slate-600 uppercase tracking-wider print:text-slate-800 print:font-bold print:py-1 print:text-[8px]">
                 {day}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 auto-rows-[minmax(120px,auto)] print:auto-rows-[minmax(100px,auto)]">
+          <div className="grid grid-cols-7 auto-rows-[minmax(120px,auto)] print:auto-rows-[minmax(80px,auto)]">
             {Array.from({ length: daysInMonth[0].getDay() }).map((_, i) => (
               <div key={`empty-${i}`} className="border-b border-r border-slate-100 bg-slate-50/50 p-2 print:bg-white print:border-slate-300" />
             ))}
@@ -321,10 +321,10 @@ export function CalendarView() {
               return (
                 <div 
                   key={day.toISOString()} 
-                  className={`border-b border-r border-slate-100 p-2 transition-colors print:border-slate-300 ${!isCurrentMonth ? 'bg-slate-50/50 text-slate-400 print:bg-slate-50 print:text-slate-300' : 'bg-white'} ${isToday(day) ? 'ring-2 ring-inset ring-indigo-500 bg-indigo-50/10 print:ring-0 print:bg-white' : ''}`}
+                  className={`border-b border-r border-slate-100 p-2 transition-colors print:border-slate-300 print:p-1 ${!isCurrentMonth ? 'bg-slate-50/50 text-slate-400 print:bg-slate-50 print:text-slate-300' : 'bg-white'} ${isToday(day) ? 'ring-2 ring-inset ring-indigo-500 bg-indigo-50/10 print:ring-0 print:bg-white' : ''}`}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${isToday(day) ? 'bg-indigo-600 text-white print:bg-transparent print:text-slate-900 print:font-bold print:text-lg print:p-0 print:w-auto print:h-auto' : 'text-slate-700 print:text-slate-900'}`}>
+                  <div className="flex justify-between items-start mb-2 print:mb-1">
+                    <span className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${isToday(day) ? 'bg-indigo-600 text-white print:bg-transparent print:text-slate-900 print:font-bold print:text-[10px] print:p-0 print:w-auto print:h-auto' : 'text-slate-700 print:text-slate-900 print:text-[10px]'}`}>
                       {format(day, 'd')}
                     </span>
                     {dayOrders.length > 0 && alertLevel === 'warning' && (
@@ -339,12 +339,12 @@ export function CalendarView() {
                     )}
                   </div>
                   
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 print:space-y-0.5">
                     {dayOrders.map(order => (
                       <div 
                         key={order.id} 
                         onClick={() => setSelectedOrder(order)}
-                        className={`text-xs p-1.5 rounded border cursor-pointer hover:shadow-sm transition-shadow print:border-slate-300 print:bg-white print:text-slate-800 ${alertLevel === 'overdue' ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100' : alertLevel === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'} truncate`}
+                        className={`text-xs p-1.5 rounded border cursor-pointer hover:shadow-sm transition-shadow print:border-slate-300 print:bg-white print:text-slate-800 print:text-[7px] print:p-0.5 ${alertLevel === 'overdue' ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100' : alertLevel === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'} truncate`}
                         title={`${order.customerName} - Pedido #${order.queueNumber}`}
                       >
                         <span className="font-bold">#{order.queueNumber}</span> {order.customerName}

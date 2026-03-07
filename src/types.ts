@@ -88,6 +88,7 @@ export interface Order {
   archiveReason?: string;
   deleted?: boolean;
   finalized?: boolean;
+  origin?: 'pdv' | 'order';
   isQuotation?: boolean;
   deliveryInfo?: {
     isDelivery: boolean;
